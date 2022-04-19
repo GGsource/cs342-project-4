@@ -39,9 +39,11 @@ public class GuiServer extends Application{
 		
 		HBox buttonBox = new HBox(400, serverChoice, clientChoice);
 		
-		clientDialogueView = new ListView<String>();
-		serverDialogueView = new ListView<String>();
-		
+		clientDialogueView = new ListView<>();
+		serverDialogueView = new ListView<>();
+		userList =			 new ListView<>();
+
+		//Save Scenes
 		sceneMap = new HashMap<String, Scene>();
 		sceneMap.put("server",  createServerGui());
 		sceneMap.put("client",  createClientGui());
@@ -104,7 +106,7 @@ public class GuiServer extends Application{
 		VBox usersBox = new VBox(userList);
 		chatBox.setStyle("-fx-background-color: blue");
 		HBox clientBox = new HBox(chatBox, usersBox);
-		return new Scene(clientBox, 400, 300);
+		return new Scene(clientBox, 500, 300);
 	}
 
 }

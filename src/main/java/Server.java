@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 public class Server{
 
 	int count = 1;	
+	//TODO: Change clients to hashmap with client, count
 	ArrayList<ClientThread> clients = new ArrayList<ClientThread>();
 	TheServer server;
 	private Consumer<Serializable> callback;
@@ -87,7 +88,7 @@ public class Server{
 					System.out.println("Streams not open");
 				}
 				
-				updateClients("new client on server: client #"+count);
+				updateClients("new client has connected: client #"+count);
 					
 				 while(true) {
 					    try {
@@ -97,7 +98,7 @@ public class Server{
 					    	
 					    	}
 					    catch(Exception e) {
-					    	callback.accept("OOOOPPs...Something wrong with the socket from client: " + count + "....closing down!");
+					    	callback.accept("Client " + count + " disconnected!");
 					    	updateClients("Client #"+count+" has left the server!");
 					    	clients.remove(this);
 					    	break;
