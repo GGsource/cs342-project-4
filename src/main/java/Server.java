@@ -11,7 +11,6 @@ public class Server {
 
 	int count = 1;	
 	//DONE: Change clients to hashmap with client, count
-	//ArrayList<ClientThread> clients = new ArrayList<ClientThread>();
 	HashMap<String, ClientThread> cl = new HashMap<>();
 	TheServer server;
 	private Consumer<Serializable> callback;
@@ -31,16 +30,15 @@ public class Server {
 			
 				try(ServerSocket mysocket = new ServerSocket(5555);) {
 					System.out.println("Server is waiting for a client!");
-				
-				while(true) {
-					ClientThread c = new ClientThread(mysocket.accept(), count);
-					//clients.add(c);
-					cl.put("Client #"+count, c);
-					callback.accept(new GuiModder("client has connected to server: " + "client #" + count));
-					c.start();
-					
-					count++;
-					
+					callback.accept(new GuiModder("Server has opened!"));
+					callback.accept(new GuiModder(cl.keySet()));
+					while(true) {
+						ClientThread c = new ClientThread(mysocket.accept(), count);
+						cl.put("Client #"+count, c);
+						callback.accept(new GuiModder("client has connected to server: " + "client #" + count));
+						c.start();
+						
+						count++;
 					}
 				}//end of try
 				catch(Exception e) {
@@ -68,7 +66,7 @@ public class Server {
 				for(ClientThread c : cl.values()) {
 					try {
 					 c.out.writeObject(new GuiModder(message));
-					 System.out.println("Successfully messaged clients: " + message);
+					 //System.out.println("Successfully messaged clients: " + message);
 					}
 					catch(Exception e) {
 						System.out.println("Failed to message the clients...");
@@ -95,15 +93,14 @@ public class Server {
 				 while(true) {
 					    try {
 					    	GuiModder gmIn = (GuiModder)in.readObject();
-					    	callback.accept(new GuiModder("client: " + count + " sent: " + gmIn.msg));
+					    	callback.accept(new GuiModder("client #" + count + " sent: " + gmIn.msg));
 					    	updateClients("client #"+count+" said: "+gmIn.msg);
 					    	
 					    	}
 					    catch(Exception e) {
-							updateClients("Client #"+count+" has left the server!");
-					    	//clients.remove(this);
 							cl.remove("Client #"+this.count);
 					    	callback.accept(new GuiModder("Client #" + count + " disconnected!"));
+							updateClients("Client #"+count+" has left the server!");
 							updateClientsList();
 					    	break;
 					    }

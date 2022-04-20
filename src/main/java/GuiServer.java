@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
@@ -31,28 +32,28 @@ public class GuiServer extends Application{
 		//Server Button
 		Button serverChoice = new Button("Server");
 		serverChoice.setStyle("-fx-pref-width: 300px");
-		serverChoice.setStyle("-fx-pref-height: 300px");
+		serverChoice.setStyle("-fx-pref-height: 100px");
 		//Client Button
 		Button clientChoice = new Button("Client");
 		clientChoice.setStyle("-fx-pref-width: 300px");
-		clientChoice.setStyle("-fx-pref-height: 300px");
+		clientChoice.setStyle("-fx-pref-height: 100px");
 		
-		HBox buttonBox = new HBox(400, serverChoice, clientChoice);
+		HBox buttonBox = new HBox(100, serverChoice, clientChoice);
+		buttonBox.setAlignment(Pos.CENTER);
 		
 		clientDialogueView = new ListView<>();
 		serverDialogueView = new ListView<>();
 		clientUserList =	 new ListView<>();
 		serverUserList =	 new ListView<>();
-		clientUserList.setPrefWidth(65);
-		serverUserList.setPrefWidth(65);
+		clientDialogueView.setPrefWidth(430);
+		clientUserList.setPrefWidth(70);
+		serverUserList.setPrefWidth(70);
 
 		//Save Scenes
 		sceneMap = new HashMap<String, Scene>();
 		sceneMap.put("server",  createServerGui());
 		sceneMap.put("client",  createClientGui());
 
-		//TODO: When server opens, have welcome message and users: #
-		//TODO: remove right side empty space for clients
 		//TODO: make clicking a user on the userlist starts communication with them
 
 		//When pressing the server button
@@ -68,12 +69,12 @@ public class GuiServer extends Application{
 						}
 						if (gmData.isUserUpdate) {
 							//It's an update to who has left or joined
-							System.out.println("isUserUpdate was true! adding:" + gmData.clients);
+							//System.out.println("isUserUpdate was true! adding:" + gmData.clients);
 							serverUserList.getItems().clear(); //Reset the list
-							serverUserList.getItems().add("Users:");
+							serverUserList.getItems().add("Users: " + gmData.set.size());
 							for (String s : gmData.set) {
 								serverUserList.getItems().add(s);
-								System.out.println(s);
+								//System.out.println(s);
 							}
 						}
 					});
@@ -87,16 +88,16 @@ public class GuiServer extends Application{
 				Platform.runLater(()->{
 					GuiModder gmData = (GuiModder)data;
 					if (gmData.isMessage) {
-						System.out.println("This client received a message!");
+						//System.out.println("This client received a message!");
 						clientDialogueView.getItems().add(gmData.msg);
 					}
 					if (gmData.isUserUpdate) {
-						System.out.println("Incoming user list update!");
+						//System.out.println("Incoming user list update!");
 						clientUserList.getItems().clear();
-						clientUserList.getItems().add("Users:");
+						clientUserList.getItems().add("Users: " + gmData.set.size());
 						for (String s : gmData.set) {
 							clientUserList.getItems().add(s);
-							System.out.println(s);
+							//System.out.println(s);
 						}
 					}
 				});
@@ -116,7 +117,7 @@ public class GuiServer extends Application{
 		BorderPane startPane = new BorderPane();
 		startPane.setPadding(new Insets(65));
 		startPane.setCenter(buttonBox);
-		Scene startScene = new Scene(startPane, 800,800);
+		Scene startScene = new Scene(startPane);
 		primaryStage.setScene(startScene);
 		primaryStage.show();
 	}
