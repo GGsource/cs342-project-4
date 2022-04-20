@@ -1,21 +1,18 @@
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.function.Consumer;
 
-/*
- * Clicker: A: I really get it    B: No idea what you are talking about
- * C: kind of following
- */
-
-public class Server{
+public class Server {
 
 	int count = 1;	
-	//TODO: Change clients to hashmap with client, count
-	ArrayList<ClientThread> clients = new ArrayList<ClientThread>();
+	//DONE: Change clients to hashmap with client, count
+	//ArrayList<ClientThread> clients = new ArrayList<ClientThread>();
+	HashMap<String, ClientThread> cl = new HashMap<>();
 	TheServer server;
 	private Consumer<Serializable> callback;
 	
@@ -30,31 +27,31 @@ public class Server{
 	
 	public class TheServer extends Thread{
 		
-		public void run() {
-		
-			try(ServerSocket mysocket = new ServerSocket(5555);){
-		    System.out.println("Server is waiting for a client!");
-		  
+			public void run() {
 			
-		    while(true) {
-		
-				ClientThread c = new ClientThread(mysocket.accept(), count);
-				callback.accept("client has connected to server: " + "client #" + count);
-				clients.add(c);
-				c.start();
+				try(ServerSocket mysocket = new ServerSocket(5555);) {
+					System.out.println("Server is waiting for a client!");
 				
-				count++;
-				
-			    }
-			}//end of try
+				while(true) {
+					ClientThread c = new ClientThread(mysocket.accept(), count);
+					//clients.add(c);
+					cl.put("Client #"+count, c);
+					callback.accept(new GuiModder("client has connected to server: " + "client #" + count));
+					c.start();
+					
+					count++;
+					
+					}
+				}//end of try
 				catch(Exception e) {
-					callback.accept("Server socket did not launch");
+					System.out.println("Server socket did not launch");
+					e.printStackTrace();
 				}
 			}//end of while
 		}
 	
 
-		class ClientThread extends Thread{
+		class ClientThread extends Thread {
 			
 		
 			Socket connection;
@@ -68,12 +65,15 @@ public class Server{
 			}
 			
 			public void updateClients(String message) {
-				for(int i = 0; i < clients.size(); i++) {
-					ClientThread t = clients.get(i);
+				for(ClientThread c : cl.values()) {
 					try {
-					 t.out.writeObject(message);
+					 c.out.writeObject(new GuiModder(message));
+					 System.out.println("Successfully messaged clients: " + message);
 					}
-					catch(Exception e) {}
+					catch(Exception e) {
+						System.out.println("Failed to message the clients...");
+						e.printStackTrace();
+					}
 				}
 			}
 			
@@ -86,21 +86,25 @@ public class Server{
 				}
 				catch(Exception e) {
 					System.out.println("Streams not open");
+					e.printStackTrace();
 				}
 				
 				updateClients("new client has connected: client #"+count);
+				updateClientsList();
 					
 				 while(true) {
 					    try {
-					    	String data = in.readObject().toString();
-					    	callback.accept("client: " + count + " sent: " + data);
-					    	updateClients("client #"+count+" said: "+data);
+					    	GuiModder gmIn = (GuiModder)in.readObject();
+					    	callback.accept(new GuiModder("client: " + count + " sent: " + gmIn.msg));
+					    	updateClients("client #"+count+" said: "+gmIn.msg);
 					    	
 					    	}
 					    catch(Exception e) {
-					    	callback.accept("Client " + count + " disconnected!");
-					    	updateClients("Client #"+count+" has left the server!");
-					    	clients.remove(this);
+							updateClients("Client #"+count+" has left the server!");
+					    	//clients.remove(this);
+							cl.remove("Client #"+this.count);
+					    	callback.accept(new GuiModder("Client #" + count + " disconnected!"));
+							updateClientsList();
 					    	break;
 					    }
 					}
@@ -108,10 +112,17 @@ public class Server{
 			
 			
 		}//end of client thread
+
+		public void updateClientsList() {
+			callback.accept(new GuiModder(cl.keySet()));
+			for (ClientThread c: cl.values()) {
+				try {
+					c.out.writeObject(new GuiModder(cl.keySet()));
+				}
+				catch (IOException e) {
+					System.out.println("Failed to give a client an updated user list");
+					e.printStackTrace();
+				}
+			}
+		}
 }
-
-
-	
-	
-
-	

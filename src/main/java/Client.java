@@ -5,6 +5,8 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.util.function.Consumer;
 
+import javafx.application.Platform;
+
 
 
 public class Client extends Thread{
@@ -30,15 +32,24 @@ public class Client extends Thread{
 	    in = new ObjectInputStream(socketClient.getInputStream());
 	    socketClient.setTcpNoDelay(true);
 		}
-		catch(Exception e) {}
+		catch(Exception e) {
+			System.out.println("Client socket failed to connect... Server may not be up yet...");
+		}
 		
 		while(true) {
 			 
 			try {
-			String message = in.readObject().toString();
-			callback.accept(message);
+			GuiModder incoming = (GuiModder) in.readObject();
+			if (incoming.isMessage) {System.out.println("Incoming is a message: " + incoming.msg);}
+			if (incoming.isUserUpdate) {System.out.println("Incoming is a userupdate...");}
+			callback.accept(incoming);
 			}
-			catch(Exception e) {}
+			catch(Exception e) {
+				System.out.println("I have disconnected from the server.");
+				e.printStackTrace();
+				Platform.exit();
+                System.exit(0);
+			}
 		}
 	
     }
@@ -46,7 +57,7 @@ public class Client extends Thread{
 	public void send(String data) {
 		
 		try {
-			out.writeObject(data);
+			out.writeObject(new GuiModder(data));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

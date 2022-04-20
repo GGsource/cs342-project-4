@@ -15,7 +15,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 public class GuiServer extends Application{
-	ListView<String> clientDialogueView, serverDialogueView, userList;
+	ListView<String> clientDialogueView, serverDialogueView, clientUserList, serverUserList;
 	HashMap<String, Scene> sceneMap;
 	Server serverConnection;
 	Client clientConnection;
@@ -41,12 +41,19 @@ public class GuiServer extends Application{
 		
 		clientDialogueView = new ListView<>();
 		serverDialogueView = new ListView<>();
-		userList =			 new ListView<>();
+		clientUserList =	 new ListView<>();
+		serverUserList =	 new ListView<>();
+		clientUserList.setPrefWidth(65);
+		serverUserList.setPrefWidth(65);
 
 		//Save Scenes
 		sceneMap = new HashMap<String, Scene>();
 		sceneMap.put("server",  createServerGui());
 		sceneMap.put("client",  createClientGui());
+
+		//TODO: When server opens, have welcome message and users: #
+		//TODO: remove right side empty space for clients
+		//TODO: make clicking a user on the userlist starts communication with them
 
 		//When pressing the server button
 		serverChoice.setOnAction(e->{
@@ -54,7 +61,21 @@ public class GuiServer extends Application{
 			primaryStage.setTitle("This is the Server");
 				serverConnection = new Server(data -> {
 					Platform.runLater(()->{
-						clientDialogueView.getItems().add(data.toString());
+						GuiModder gmData = (GuiModder)data;
+						if (gmData.isMessage) {
+							//It's a message, display in server
+							serverDialogueView.getItems().add(gmData.msg);	
+						}
+						if (gmData.isUserUpdate) {
+							//It's an update to who has left or joined
+							System.out.println("isUserUpdate was true! adding:" + gmData.clients);
+							serverUserList.getItems().clear(); //Reset the list
+							serverUserList.getItems().add("Users:");
+							for (String s : gmData.set) {
+								serverUserList.getItems().add(s);
+								System.out.println(s);
+							}
+						}
 					});
 				});
 		});
@@ -64,7 +85,20 @@ public class GuiServer extends Application{
 			primaryStage.setTitle("This is a client");
 			clientConnection = new Client(data->{
 				Platform.runLater(()->{
-					serverDialogueView.getItems().add(data.toString());
+					GuiModder gmData = (GuiModder)data;
+					if (gmData.isMessage) {
+						System.out.println("This client received a message!");
+						clientDialogueView.getItems().add(gmData.msg);
+					}
+					if (gmData.isUserUpdate) {
+						System.out.println("Incoming user list update!");
+						clientUserList.getItems().clear();
+						clientUserList.getItems().add("Users:");
+						for (String s : gmData.set) {
+							clientUserList.getItems().add(s);
+							System.out.println(s);
+						}
+					}
 				});
 			});
 			clientConnection.start();
@@ -80,7 +114,7 @@ public class GuiServer extends Application{
 
 		//Set Start Scene and begin
 		BorderPane startPane = new BorderPane();
-		startPane.setPadding(new Insets(70));
+		startPane.setPadding(new Insets(65));
 		startPane.setCenter(buttonBox);
 		Scene startScene = new Scene(startPane, 800,800);
 		primaryStage.setScene(startScene);
@@ -90,8 +124,9 @@ public class GuiServer extends Application{
 	public Scene createServerGui() {
 		BorderPane pane = new BorderPane();
 		pane.setPadding(new Insets(70));
-		pane.setStyle("-fx-background-color: coral");
-		pane.setCenter(clientDialogueView);
+		pane.setStyle("-fx-background-color: gold");
+		pane.setCenter(serverDialogueView);
+		pane.setRight(serverUserList);
 		return new Scene(pane, 500, 400);
 	}
 	
@@ -102,8 +137,8 @@ public class GuiServer extends Application{
 			clientConnection.send(c1.getText());
 			c1.clear();
 		});
-		VBox chatBox = new VBox(10, c1,b1,serverDialogueView);
-		VBox usersBox = new VBox(userList);
+		VBox chatBox = new VBox(10, c1,b1,clientDialogueView);
+		VBox usersBox = new VBox(clientUserList);
 		chatBox.setStyle("-fx-background-color: blue");
 		HBox clientBox = new HBox(chatBox, usersBox);
 		return new Scene(clientBox, 500, 300);
