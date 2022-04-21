@@ -94,8 +94,14 @@ public class Server {
 				 while(true) {
 					    try {
 					    	GuiModder gmIn = (GuiModder)in.readObject();
-					    	callback.accept(new GuiModder("client #" + count + " sent: " + gmIn.msg));
-					    	updateClients("client #"+count+" said: "+gmIn.msg);
+							if (gmIn.isMessage) {
+								callback.accept(new GuiModder("client #" + count + " sent: " + gmIn.msg));
+								updateClients("client #"+count+" said: "+gmIn.msg);
+							}
+							else if (gmIn.isDMRequest) {
+								//Someone wants a DM conversation
+								deliverDirectMessageRequest(gmIn.userA, gmIn.userB);
+							}
 					    	
 					    	}
 					    catch(Exception e) {
@@ -130,6 +136,18 @@ public class Server {
 			}
 			catch (IOException e) {
 				System.out.println("Failed to remind the client who they are :(");
+				e.printStackTrace();
+			}
+		}
+
+		private void deliverDirectMessageRequest(String userRequesting , String userToRequest) {
+			//ClientThread clientA = cl.get(gmIn.userA);
+			ClientThread clientB = cl.get(userToRequest);
+			try {
+				clientB.out.writeObject(new GuiModder(false, userRequesting, userToRequest));
+			}
+			catch (IOException e) {
+				System.out.println("Failed to notify user B that user A wanted to direct message them...");
 				e.printStackTrace();
 			}
 		}

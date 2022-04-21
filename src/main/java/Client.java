@@ -54,4 +54,15 @@ public class Client extends Thread{
 			e.printStackTrace();
 		}
 	}
+
+	public void directMessage(String userA, String userB) {
+		//User A has requested a DM chat with userB
+		try {
+			out.writeObject(new GuiModder(true, userA, userB));
+		}
+		catch (IOException e) {
+			System.out.println("Failed to request  direct message...");
+			e.printStackTrace();
+		}
+	}
 }

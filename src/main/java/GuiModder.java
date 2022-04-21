@@ -6,10 +6,14 @@ public class GuiModder implements Serializable {
     public boolean isMessage = false;
     public boolean isUserUpdate = false;
     public boolean isReminder = false;
+    public boolean isDMRequest = false;
+    public boolean isDMReceiver = false;
     
     public String msg;
     public HashSet<String> set;
     public int reminder;
+    String userA;
+    String userB;
 
 
     GuiModder(String message) {
@@ -40,5 +44,15 @@ public class GuiModder implements Serializable {
     GuiModder(int count) {
         isReminder = true;
         reminder = count;
+    }
+
+    GuiModder(Boolean isRequester, String requestingUser, String receivingUser) {
+        if (isRequester)
+            isDMRequest = true;
+        else
+            isDMReceiver = true;
+        
+        userA = requestingUser;
+        userB = receivingUser;
     }
 }
