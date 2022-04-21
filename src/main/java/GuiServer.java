@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -27,7 +28,8 @@ public class GuiServer extends Application{
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		primaryStage.setTitle("The Networked Client/Server GUI Example");
+		primaryStage.setTitle("Project 4 Advanced Chat");
+		primaryStage.getIcons().add(new Image("/images/chat.png"));
 		
 		//Server Button
 		Button serverChoice = new Button("Server");
@@ -60,6 +62,8 @@ public class GuiServer extends Application{
 		serverChoice.setOnAction(e->{
 			primaryStage.setScene(sceneMap.get("server"));
 			primaryStage.setTitle("This is the Server");
+			primaryStage.getIcons().clear();
+			primaryStage.getIcons().add(new Image("/images/chat_server.png"));
 				serverConnection = new Server(data -> {
 					Platform.runLater(()->{
 						GuiModder gmData = (GuiModder)data;
@@ -84,6 +88,8 @@ public class GuiServer extends Application{
 		clientChoice.setOnAction(e-> {
 			primaryStage.setScene(sceneMap.get("client"));
 			primaryStage.setTitle("This is a client");
+			primaryStage.getIcons().clear();
+			primaryStage.getIcons().add(new Image("/images/chat_client.png"));
 			clientConnection = new Client(data->{
 				Platform.runLater(()->{
 					GuiModder gmData = (GuiModder)data;
