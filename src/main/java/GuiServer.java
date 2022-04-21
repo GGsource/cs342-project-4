@@ -47,7 +47,7 @@ public class GuiServer extends Application{
 		serverDialogueView = new ListView<>();
 		clientUserList =	 new ListView<>();
 		serverUserList =	 new ListView<>();
-		clientDialogueView.setPrefWidth(430);
+		clientDialogueView.setPrefWidth(425);
 		clientUserList.setPrefWidth(70);
 		serverUserList.setPrefWidth(70);
 
@@ -87,12 +87,14 @@ public class GuiServer extends Application{
 		//When pressing the client button
 		clientChoice.setOnAction(e-> {
 			primaryStage.setScene(sceneMap.get("client"));
-			primaryStage.setTitle("This is a client");
 			primaryStage.getIcons().clear();
 			primaryStage.getIcons().add(new Image("/images/chat_client.png"));
 			clientConnection = new Client(data->{
 				Platform.runLater(()->{
 					GuiModder gmData = (GuiModder)data;
+					if (gmData.isReminder) {
+						primaryStage.setTitle("This is client #" + gmData.reminder);
+					}
 					if (gmData.isMessage) {
 						//System.out.println("This client received a message!");
 						clientDialogueView.getItems().add(gmData.msg);
@@ -138,16 +140,18 @@ public class GuiServer extends Application{
 	}
 	
 	public Scene createClientGui() {
-		TextField c1 = new TextField();
-		Button b1 = new Button("Send");
-		b1.setOnAction(e->{
-			clientConnection.send(c1.getText());
-			c1.clear();
+		TextField clientInputField = new TextField();
+		clientInputField.setPromptText("Message to server");
+		Button sendButton = new Button("Send");
+		sendButton.setOnAction(e->{
+			clientConnection.send(clientInputField.getText());
+			clientInputField.clear();
 		});
-		VBox chatBox = new VBox(10, c1,b1,clientDialogueView);
+		VBox chatBox = new VBox(10, clientInputField,sendButton,clientDialogueView);
 		VBox usersBox = new VBox(clientUserList);
 		chatBox.setStyle("-fx-background-color: blue");
-		HBox clientBox = new HBox(chatBox, usersBox);
+		HBox clientBox = new HBox(10, chatBox, usersBox);
+		clientBox.setStyle("-fx-background-color: blue");
 		return new Scene(clientBox, 500, 300);
 	}
 

@@ -1,15 +1,16 @@
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 public class GuiModder implements Serializable {
     public boolean isMessage = false;
     public boolean isUserUpdate = false;
+    public boolean isReminder = false;
     
-    String msg;
-    ArrayList<Server.ClientThread> clients;
-    HashSet<String> set;
+    public String msg;
+    public HashSet<String> set;
+    public int reminder;
+
 
     GuiModder(String message) {
         isMessage = true;
@@ -36,4 +37,8 @@ public class GuiModder implements Serializable {
     //     for (Server.ClientThread ct : givenClients)
     //         clients.add(ct);
     // }
+    GuiModder(int count) {
+        isReminder = true;
+        reminder = count;
+    }
 }

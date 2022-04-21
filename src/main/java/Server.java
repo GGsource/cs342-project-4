@@ -89,6 +89,7 @@ public class Server {
 				
 				updateClients("new client has connected: client #"+count);
 				updateClientsList();
+				remindClient(this);
 					
 				 while(true) {
 					    try {
@@ -120,6 +121,16 @@ public class Server {
 					System.out.println("Failed to give a client an updated user list");
 					e.printStackTrace();
 				}
+			}
+		}
+
+		private void remindClient(ClientThread c) {
+			try {
+				c.out.writeObject(new GuiModder(c.count));
+			}
+			catch (IOException e) {
+				System.out.println("Failed to remind the client who they are :(");
+				e.printStackTrace();
 			}
 		}
 }
