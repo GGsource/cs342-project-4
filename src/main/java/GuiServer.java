@@ -233,7 +233,7 @@ public class GuiServer extends Application{
 			if (chosenButton != null) { //In case the user selected nothing
 				String chosenUser = chosenButton.getText();
 				clientConnection.createGroup(new User(iAm));
-				givenStage.setScene(createGroupDMGUI());
+				givenStage.setScene(createGroupDMGUI(givenStage));
 				clientConnection.directMessage(iAm, chosenUser, groupIndex);
 			}
 		});
@@ -268,14 +268,14 @@ public class GuiServer extends Application{
 			clientConnection.addToGroup(new User(iAm), groupIndex);
 			
 			//DONE: Take this user to DM screen
-			givenStage.setScene(createGroupDMGUI());
+			givenStage.setScene(createGroupDMGUI(givenStage));
 			//On DM group screen, the send button will send a GuiModder(String msg, int groupIndex)
 		});
 
 		return cStage;
 	}
 
-	private Scene createGroupDMGUI() {
+	private Scene createGroupDMGUI(Stage givenStage) {
 		Label groupLabel = new Label("Group Messaging");
 		ListView<String> groupChatView = new ListView<>();
 		TextField groupInputField = new TextField();
@@ -299,7 +299,8 @@ public class GuiServer extends Application{
 
 		//Return button
 		returnButton.setOnAction(e->{
-			//TODO: set scene back to clientGui
+			//DONE: set scene back to clientGui
+			givenStage.setScene(sceneMap.get("client"));
 			//TODO: add user back to client list in server wide chat
 			//TODO: remove user from group's client list
 			//TODO: update group you are leaving's userlist
