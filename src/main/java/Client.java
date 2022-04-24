@@ -92,4 +92,13 @@ public class Client extends Thread{
 			e.printStackTrace();
 		}
 	}
+	public void groupSend(String message, int groupNum) {
+		try {
+			out.writeObject(new GuiModder(message, groupNum));
+		}
+		catch (IOException e) {
+			System.out.println("Failed to send message to group #"+groupNum+"...");
+			e.printStackTrace();
+		}
+	}
 }

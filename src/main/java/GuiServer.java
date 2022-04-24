@@ -30,6 +30,9 @@ public class GuiServer extends Application{
 	String iAm;
 	Scene prevScene;
 	int groupIndex = -1;
+	ListView<String> groupChatView;
+	TextField groupInputField;
+	String chosenUser;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -108,11 +111,11 @@ public class GuiServer extends Application{
 						iAm = gmData.name;
 						primaryStage.setTitle("You are " + iAm);
 					}
-					if (gmData.isMessage) {
+					else if (gmData.isMessage) {
 						//System.out.println("This client received a message!");
 						clientDialogueView.getItems().add(gmData.msg);
 					}
-					if (gmData.isUserUpdate) {
+					else if (gmData.isUserUpdate) {
 						//System.out.println("Incoming user list update!");
 						userNameList.clear(); //reset the set we have saved to refill
 						clientUserList.getItems().clear();
@@ -125,7 +128,7 @@ public class GuiServer extends Application{
 						userNameList.sort(null);
 						clientUserList.getItems().addAll(userNameList);
 					}
-					if (gmData.isDMRequest) {
+					else if (gmData.isDMRequest) {
 						//This user is being asked if they want to DM
 						//Give an option screen
 						prevScene = primaryStage.getScene();
@@ -142,9 +145,15 @@ public class GuiServer extends Application{
 						//TODO: make so closing the popup rejects invite
 						
 					}
-					if (gmData.isGroupAssignment) {
+					else if (gmData.isGroupAssignment) {
+						//System.out.println("groupIndex was just set to "+gmData.groupAssignment);
 						//Now we know what group dm we belong to
 						groupIndex = gmData.groupAssignment;
+						// System.out.println("this client just created a groupDM, groupIndex is now: "+groupIndex);
+						clientConnection.directMessage(iAm, chosenUser, groupIndex);
+					}
+					else if(gmData.isGroupMessage) {
+						groupChatView.getItems().add(gmData.msg);
 					}
 				});
 			});
@@ -231,10 +240,12 @@ public class GuiServer extends Application{
 		confirmButton.setOnAction(e->{
 			RadioButton chosenButton = (RadioButton)tg.getSelectedToggle();
 			if (chosenButton != null) { //In case the user selected nothing
-				String chosenUser = chosenButton.getText();
+				chosenUser = chosenButton.getText();
+				//System.out.println("this client is about to create a groupDM, groupIndex is: "+groupIndex);
 				clientConnection.createGroup(new User(iAm));
 				givenStage.setScene(createGroupDMGUI(givenStage));
-				clientConnection.directMessage(iAm, chosenUser, groupIndex);
+
+				//FIXME:
 			}
 		});
 		return new Scene(dmSelectBox, 200, 200);
@@ -264,9 +275,7 @@ public class GuiServer extends Application{
 			//User accepted request, close this popup
 			cStage.close();
 			//DONE: Add this user to the userGroup
-			//clientConnection.sendGroup(requestingUser, iAm);
 			clientConnection.joinGroup(new User(iAm), groupIndex);
-			
 			//DONE: Take this user to DM screen
 			givenStage.setScene(createGroupDMGUI(givenStage));
 			//On DM group screen, the send button will send a GuiModder(String msg, int groupIndex)
@@ -277,8 +286,8 @@ public class GuiServer extends Application{
 
 	private Scene createGroupDMGUI(Stage givenStage) {
 		Label groupLabel = new Label("Group Messaging");
-		ListView<String> groupChatView = new ListView<>();
-		TextField groupInputField = new TextField();
+		groupChatView = new ListView<>();
+		groupInputField = new TextField();
 		groupInputField.setPromptText("Message Group");
 		Button sendButton = new Button("Send");
 		HBox inputBox = new HBox(10, groupInputField, sendButton);
@@ -301,16 +310,18 @@ public class GuiServer extends Application{
 		returnButton.setOnAction(e->{
 			//DONE: set scene back to clientGui
 			givenStage.setScene(sceneMap.get("client"));
-			//TODO: update group you are leaving's userlist
+			//update group you are leaving's userlist as well as the serverwide chat's to know you're rejoining
 			clientConnection.leaveGroup(new User(iAm), groupIndex);
-			//DONE: set group index to -1
+			//DONE: set group index back to -1 since we've left
 			groupIndex = -1;
-			//TODO: make sure rejoined client still has same name
 		});
 		//Send button
 		sendButton.setOnAction(e->{
 			//TODO: take text from inputfield and add to the listview
 			//TODO: send message to the server to tell other participants to receive msg
+			clientConnection.groupSend(groupInputField.getText(), groupIndex);
+			//FIXME: groupIndexs is -1 at this time...
+			groupInputField.clear();
 		});
 		//Send back the scene
 		return new Scene(groupBox, 400, 300);

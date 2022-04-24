@@ -41,7 +41,7 @@ public class GuiModder implements Serializable {
             name = givenName;
         }
     }
-    
+
     GuiModder(Group g) {
         isGroupAssignment = true;
         groupAssignment = g.ndx;
@@ -71,6 +71,7 @@ public class GuiModder implements Serializable {
 
     GuiModder(String message, int groupNdx) {
         isGroupMessage = true;
+        msg = message;
         groupAssignment = groupNdx;
     }
 }

@@ -1,5 +1,5 @@
 public class Group {
-    int ndx = -1;
+    int ndx = -5;
     Group(int givenNdx) {
         ndx = givenNdx;
     }
