@@ -16,7 +16,7 @@ public class Server {
 	TheServer server;
 	private Consumer<Serializable> callback;
 	//Create list of group DMs going on, with each group DM being a list of users
-	ArrayList<ArrayList<ClientThread>> groupList = new ArrayList<>();
+	ArrayList<HashMap<String, ClientThread>> groupList = new ArrayList<>();
 	
 	Server(Consumer<Serializable> call) {
 	
@@ -106,21 +106,29 @@ public class Server {
 							}
 							else if (gmIn.isCreatingGroup) {
 								//Initialize a new group to chat separately
-								ArrayList<ClientThread> clientGroup = new ArrayList<>();
+								HashMap<String, ClientThread> clientGroup = new HashMap<>();
 								ClientThread c = cl.remove(gmIn.seeder.name);
-								clientGroup.add(c);
+								clientGroup.put(c.name, c);
 								//Now add this group to our list of groups
 								groupList.add(clientGroup);
+								//Notify creator of what group index they have
+								updateGroupIndex(c);
 								updateClientsList(); //Show theyre no longer available
 							}
-							else if (gmIn.isAddingToGroup) {
+							else if (gmIn.isJoiningGroup) {
 								//A user accepted invite to group DM
 								ClientThread c = cl.remove(gmIn.participant.name);
-								groupList.get(gmIn.groupAssignment).add(c);
+								groupList.get(gmIn.groupAssignment).put(c.name, c);
 								updateClientsList(); //Show theyre no longer available
 							}
+							else if (gmIn.isLeavingGroup) {
+								//A user has chosen to return to serverwide chat
+								ClientThread c = groupList.get(gmIn.groupAssignment).remove(gmIn.participant.name);
+								cl.put(c.name, c);
+								updateClientsList();
+							}
 					    	
-					    	}
+						}
 					    catch(Exception e) {
 							cl.remove(name);
 					    	callback.accept(new GuiModder(name+" disconnected!"));
@@ -164,6 +172,16 @@ public class Server {
 			}
 			catch (IOException e) {
 				System.out.println("Failed to notify user B that user A wanted to direct message them...");
+				e.printStackTrace();
+			}
+		}
+
+		private void updateGroupIndex(ClientThread creator) {
+			try {
+				creator.out.writeObject(new GuiModder(new Group(groupList.size())));
+			}
+			catch (IOException e) {
+				System.out.println("Failed to notify group creator of their new group's index...");
 				e.printStackTrace();
 			}
 		}

@@ -8,7 +8,9 @@ public class GuiModder implements Serializable {
     public boolean isReminder = false;
     public boolean isDMRequest = false;
     public boolean isCreatingGroup = false;
-    public boolean isAddingToGroup = false;
+    public boolean isJoiningGroup = false;
+    public boolean isLeavingGroup = false;
+    public boolean isRequestingGroupAssignment = false;
     public boolean isGroupAssignment = false;
     public boolean isGroupMessage = false;
     
@@ -38,10 +40,11 @@ public class GuiModder implements Serializable {
             isReminder = true;
             name = givenName;
         }
-        else if ("".contains(givenName)) {
-            isGroupAssignment = true;
-            groupAssignment = groupNum;
-        }
+    }
+    
+    GuiModder(Group g) {
+        isGroupAssignment = true;
+        groupAssignment = g.ndx;
     }
 
     GuiModder(String requestingUser, String receivingUser, int groupNum) {
@@ -56,9 +59,14 @@ public class GuiModder implements Serializable {
         seeder = usr;
     }
 
-    GuiModder(User usr, int GroupNum) {
-        isAddingToGroup = true;
+    GuiModder(User usr, int GroupNum, boolean isJoining) {
         participant = usr;
+        if (isJoining) {
+            isJoiningGroup = true;
+        }
+        else {
+            isLeavingGroup = true;
+        }
     }
 
     GuiModder(String message, int groupNdx) {

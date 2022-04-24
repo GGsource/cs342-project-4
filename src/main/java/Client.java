@@ -61,7 +61,7 @@ public class Client extends Thread{
 			out.writeObject(new GuiModder(userA, userB, groupNum));
 		}
 		catch (IOException e) {
-			System.out.println("Failed to request  direct message...");
+			System.out.println("Failed to request direct message...");
 			e.printStackTrace();
 		}
 	}
@@ -74,12 +74,21 @@ public class Client extends Thread{
 			e.printStackTrace();
 		}
 	}
-	public void addToGroup(User usr, int groupNum) {
+	public void joinGroup(User usr, int groupNum) {
 		try {
-			out.writeObject(new GuiModder(usr, groupNum));
+			out.writeObject(new GuiModder(usr, groupNum, true));
 		}
 		catch (IOException e) {
 			System.out.println("Failed to to tell server to add participant to DM group...");
+			e.printStackTrace();
+		}
+	}
+	public void leaveGroup(User usr, int groupNum) {
+		try {
+			out.writeObject(new GuiModder(usr, groupNum, false));
+		}
+		catch (IOException e) {
+			System.out.println("Failed to to tell server to remove participant from DM group...");
 			e.printStackTrace();
 		}
 	}

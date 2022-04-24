@@ -265,7 +265,7 @@ public class GuiServer extends Application{
 			cStage.close();
 			//DONE: Add this user to the userGroup
 			//clientConnection.sendGroup(requestingUser, iAm);
-			clientConnection.addToGroup(new User(iAm), groupIndex);
+			clientConnection.joinGroup(new User(iAm), groupIndex);
 			
 			//DONE: Take this user to DM screen
 			givenStage.setScene(createGroupDMGUI(givenStage));
@@ -301,11 +301,10 @@ public class GuiServer extends Application{
 		returnButton.setOnAction(e->{
 			//DONE: set scene back to clientGui
 			givenStage.setScene(sceneMap.get("client"));
-			//TODO: add user back to client list in server wide chat
-			//TODO: remove user from group's client list
 			//TODO: update group you are leaving's userlist
-			//TODO: Update server and global chat userlists
-			//TODO: set group index to -1
+			clientConnection.leaveGroup(new User(iAm), groupIndex);
+			//DONE: set group index to -1
+			groupIndex = -1;
 			//TODO: make sure rejoined client still has same name
 		});
 		//Send button
