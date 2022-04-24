@@ -105,7 +105,7 @@ public class GuiServer extends Application{
 				Platform.runLater(()->{
 					GuiModder gmData = (GuiModder)data;
 					if (gmData.isReminder) {
-						iAm = "Client #" + gmData.reminder;
+						iAm = gmData.name;
 						primaryStage.setTitle("You are " + iAm);
 					}
 					if (gmData.isMessage) {
@@ -125,17 +125,21 @@ public class GuiServer extends Application{
 						userNameList.sort(null);
 						clientUserList.getItems().addAll(userNameList);
 					}
-					if (gmData.isDMReceiver) {
+					if (gmData.isDMRequest) {
 						//This user is being asked if they want to DM
 						//Give an option screen
 						prevScene = primaryStage.getScene();
-						Stage confirmStage = createDMConfirmGui(primaryStage, gmData.userA);
+						Stage confirmStage = createDMConfirmGui(primaryStage, gmData.userA, gmData.groupAssignment);
 						confirmStage.initModality(Modality.APPLICATION_MODAL);
 						confirmStage.initOwner(primaryStage);
 						confirmStage.show();
 						Coord pos = getCenterPoint(primaryStage, confirmStage);
 						confirmStage.setX(pos.x);
 						confirmStage.setY(pos.y);
+						//TODO: Give this popup window a title
+						//TODO: Give popup an icon
+						//TODO: make popup unable to be maximized
+						//TODO: make so closing the popup rejects invite
 						
 					}
 					if (gmData.isGroupAssignment) {
@@ -196,6 +200,7 @@ public class GuiServer extends Application{
 	}
 
 	private Scene createDMSelectionGui(Stage givenStage) {
+		//TODO: Make this scene be a popup instead
 		Label dmTitleLabel = new Label("Select who you would like to direct message");
 		dmTitleLabel.setWrapText(true);
 		VBox usersBox = new VBox();
@@ -227,14 +232,15 @@ public class GuiServer extends Application{
 			RadioButton chosenButton = (RadioButton)tg.getSelectedToggle();
 			if (chosenButton != null) { //In case the user selected nothing
 				String chosenUser = chosenButton.getText();
-				clientConnection.directMessage(iAm, chosenUser);
+				clientConnection.createGroup(new User(iAm));
 				givenStage.setScene(createGroupDMGUI());
+				clientConnection.directMessage(iAm, chosenUser, groupIndex);
 			}
 		});
 		return new Scene(dmSelectBox, 200, 200);
 	}
 
-	private Stage createDMConfirmGui(Stage givenStage, String requestingUser) {
+	private Stage createDMConfirmGui(Stage givenStage, String requestingUser, int groupNum) {
 		Label requesterLabel = new Label(requestingUser + " would like to Direct Message with you");
 		requesterLabel.setWrapText(true);
 		Button declineButton = new Button("Decline");
@@ -253,14 +259,16 @@ public class GuiServer extends Application{
 			cStage.close();
 		});
 		acceptButton.setOnAction(e->{
+			//Save the group index to know where to send your messages
+			groupIndex = groupNum;
 			//User accepted request, close this popup
 			cStage.close();
-			//DONE: Add both users to a new userGroup
-			clientConnection.sendGroup(requestingUser, iAm);
+			//DONE: Add this user to the userGroup
+			//clientConnection.sendGroup(requestingUser, iAm);
+			clientConnection.addToGroup(new User(iAm), groupIndex);
 			
 			//DONE: Take this user to DM screen
 			givenStage.setScene(createGroupDMGUI());
-
 			//On DM group screen, the send button will send a GuiModder(String msg, int groupIndex)
 		});
 
@@ -295,7 +303,7 @@ public class GuiServer extends Application{
 		participantsView.setPrefWidth(70);
 		//Send back the scene
 		return new Scene(groupBox, 400, 300);
-		//TODO: Return button adds user back to client list in server wide chat
+		//TODO: Return button adds user back to client list in server wide chat and sets group index to -1
 		//Return button
 		//Send button
 

@@ -36,8 +36,8 @@ public class Server {
 					callback.accept(new GuiModder(cl.keySet()));
 					while(true) {
 						ClientThread c = new ClientThread(mysocket.accept(), count);
-						cl.put("Client #"+count, c);
-						callback.accept(new GuiModder("client has connected to server: " + "client #" + count));
+						cl.put(c.name, c);
+						callback.accept(new GuiModder("client has connected to server: " + c.name));
 						c.start();
 						
 						count++;
@@ -55,13 +55,13 @@ public class Server {
 			
 		
 			Socket connection;
-			int count;
+			String name;
 			ObjectInputStream in;
 			ObjectOutputStream out;
 			
 			ClientThread(Socket s, int count){
 				this.connection = s;
-				this.count = count;	
+				this.name = "Client #" + count;	
 			}
 			
 			public void updateClients(String message) {
@@ -89,7 +89,7 @@ public class Server {
 					e.printStackTrace();
 				}
 				
-				updateClients("new client has connected: client #"+count);
+				updateClients("new client has connected: "+name);
 				updateClientsList();
 				remindClient(this);
 					
@@ -97,32 +97,34 @@ public class Server {
 					    try {
 					    	GuiModder gmIn = (GuiModder)in.readObject();
 							if (gmIn.isMessage) {
-								callback.accept(new GuiModder("client #" + count + " sent: " + gmIn.msg));
-								updateClients("client #"+count+" said: "+gmIn.msg);
+								callback.accept(new GuiModder(name + " sent: " + gmIn.msg));
+								updateClients(name+" said: "+gmIn.msg);
 							}
 							else if (gmIn.isDMRequest) {
 								//Someone wants a DM conversation
-								deliverDirectMessageRequest(gmIn.userA, gmIn.userB);
+								deliverDirectMessageRequest(gmIn.userA, gmIn.userB, gmIn.groupAssignment);
 							}
-							else if (gmIn.isUserGroup) {
-								//DM convo was accepted, this is the list of users to add
+							else if (gmIn.isCreatingGroup) {
+								//Initialize a new group to chat separately
 								ArrayList<ClientThread> clientGroup = new ArrayList<>();
-								for (String s : gmIn.userList) {
-									ClientThread c = cl.get(s);
-									clientGroup.add(c);
-									//Notify them of what group number they will be in
-									c.out.writeObject(new GuiModder(-1, groupList.size()));
-								}
-								//clientGroup now holds all clients belonging to this dm group
+								ClientThread c = cl.remove(gmIn.seeder.name);
+								clientGroup.add(c);
+								//Now add this group to our list of groups
 								groupList.add(clientGroup);
-
+								updateClientsList(); //Show theyre no longer available
+							}
+							else if (gmIn.isAddingToGroup) {
+								//A user accepted invite to group DM
+								ClientThread c = cl.remove(gmIn.participant.name);
+								groupList.get(gmIn.groupAssignment).add(c);
+								updateClientsList(); //Show theyre no longer available
 							}
 					    	
 					    	}
 					    catch(Exception e) {
-							cl.remove("Client #"+this.count);
-					    	callback.accept(new GuiModder("Client #" + count + " disconnected!"));
-							updateClients("Client #"+count+" has left the server!");
+							cl.remove(name);
+					    	callback.accept(new GuiModder(name+" disconnected!"));
+							updateClients(name+" has left the server!");
 							updateClientsList();
 					    	break;
 					    }
@@ -147,7 +149,7 @@ public class Server {
 
 		private void remindClient(ClientThread c) {
 			try {
-				c.out.writeObject(new GuiModder(c.count, -1));
+				c.out.writeObject(new GuiModder(-1, c.name));
 			}
 			catch (IOException e) {
 				System.out.println("Failed to remind the client who they are :(");
@@ -155,11 +157,10 @@ public class Server {
 			}
 		}
 
-		private void deliverDirectMessageRequest(String userRequesting , String userToRequest) {
-			//ClientThread clientA = cl.get(gmIn.userA);
+		private void deliverDirectMessageRequest(String userRequesting , String userToRequest, int groupNum) {
 			ClientThread clientB = cl.get(userToRequest);
 			try {
-				clientB.out.writeObject(new GuiModder(false, userRequesting, userToRequest));
+				clientB.out.writeObject(new GuiModder(userRequesting, userToRequest, groupNum));
 			}
 			catch (IOException e) {
 				System.out.println("Failed to notify user B that user A wanted to direct message them...");

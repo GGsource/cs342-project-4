@@ -1,5 +1,4 @@
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,17 +7,18 @@ public class GuiModder implements Serializable {
     public boolean isUserUpdate = false;
     public boolean isReminder = false;
     public boolean isDMRequest = false;
-    public boolean isDMReceiver = false;
-    public boolean isUserGroup = false;
+    public boolean isCreatingGroup = false;
+    public boolean isAddingToGroup = false;
     public boolean isGroupAssignment = false;
     public boolean isGroupMessage = false;
     
     public String msg;
     public HashSet<String> set;
-    public int reminder;
+    public String name;
     String userA;
     String userB;
-    ArrayList<String> userList;
+    User seeder;
+    User participant;
     int groupAssignment;
 
 
@@ -33,33 +33,32 @@ public class GuiModder implements Serializable {
             set.add(str);
         }
     }
-    GuiModder(int count, int groupNum) {
+    GuiModder(int groupNum, String givenName) {
         if (groupNum == -1){ 
             isReminder = true;
-            reminder = count;
+            name = givenName;
         }
-        else if (count == -1) {
+        else if ("".contains(givenName)) {
             isGroupAssignment = true;
             groupAssignment = groupNum;
         }
     }
 
-    GuiModder(Boolean isRequester, String requestingUser, String receivingUser) {
-        if (isRequester)
-            isDMRequest = true;
-        else
-            isDMReceiver = true;
-        
+    GuiModder(String requestingUser, String receivingUser, int groupNum) {
+        isDMRequest = true;
         userA = requestingUser;
         userB = receivingUser;
+        groupAssignment = groupNum;
     }
 
-    GuiModder(String ... userGroup) {
-        userList = new ArrayList<>();
-        isUserGroup = true;
-        for (String s : userGroup) {
-            userList.add(s);
-        }
+    GuiModder(User usr) {
+        isCreatingGroup = true;
+        seeder = usr;
+    }
+
+    GuiModder(User usr, int GroupNum) {
+        isAddingToGroup = true;
+        participant = usr;
     }
 
     GuiModder(String message, int groupNdx) {

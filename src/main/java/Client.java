@@ -55,22 +55,31 @@ public class Client extends Thread{
 		}
 	}
 
-	public void directMessage(String userA, String userB) {
+	public void directMessage(String userA, String userB, int groupNum) {
 		//User A has requested a DM chat with userB
 		try {
-			out.writeObject(new GuiModder(true, userA, userB));
+			out.writeObject(new GuiModder(userA, userB, groupNum));
 		}
 		catch (IOException e) {
 			System.out.println("Failed to request  direct message...");
 			e.printStackTrace();
 		}
 	}
-	public void sendGroup (String ... users) {
+	public void createGroup (User usr) {
 		try {
-			out.writeObject(new GuiModder(users));
+			out.writeObject(new GuiModder(usr));
 		}
 		catch (IOException e) {
-			System.out.println("Failed to send array of user names for new DM group...");
+			System.out.println("Failed to to tell server to create new DM group...");
+			e.printStackTrace();
+		}
+	}
+	public void addToGroup(User usr, int groupNum) {
+		try {
+			out.writeObject(new GuiModder(usr, groupNum));
+		}
+		catch (IOException e) {
+			System.out.println("Failed to to tell server to add participant to DM group...");
 			e.printStackTrace();
 		}
 	}
