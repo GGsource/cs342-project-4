@@ -274,11 +274,6 @@ public class GuiServer extends Application{
 
 		return cStage;
 	}
-	// private Scene createDMWaitingGui(String requestedUser) {
-	// 	Label requestingLabel = new Label("Waiting for "+ requestedUser +" to accept your Direct Message request");
-	// 	requestingLabel.setWrapText(true);
-	// 	return new Scene(requestingLabel, 300, 100);
-	// }
 
 	private Scene createGroupDMGUI() {
 		Label groupLabel = new Label("Group Messaging");
@@ -301,12 +296,24 @@ public class GuiServer extends Application{
 		groupBox.setPadding(new Insets(10));
 		//Adjust list sizes
 		participantsView.setPrefWidth(70);
+
+		//Return button
+		returnButton.setOnAction(e->{
+			//TODO: set scene back to clientGui
+			//TODO: add user back to client list in server wide chat
+			//TODO: remove user from group's client list
+			//TODO: update group you are leaving's userlist
+			//TODO: Update server and global chat userlists
+			//TODO: set group index to -1
+			//TODO: make sure rejoined client still has same name
+		});
+		//Send button
+		sendButton.setOnAction(e->{
+			//TODO: take text from inputfield and add to the listview
+			//TODO: send message to the server to tell other participants to receive msg
+		});
 		//Send back the scene
 		return new Scene(groupBox, 400, 300);
-		//TODO: Return button adds user back to client list in server wide chat and sets group index to -1
-		//Return button
-		//Send button
-
 	}
 
 	//Helper Function
