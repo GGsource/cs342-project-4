@@ -4,6 +4,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
@@ -14,9 +15,10 @@ public class Server {
 	HashMap<String, ClientThread> cl = new HashMap<>();
 	TheServer server;
 	private Consumer<Serializable> callback;
+	//Create list of group DMs going on, with each group DM being a list of users
+	ArrayList<ArrayList<ClientThread>> groupList = new ArrayList<>();
 	
-	
-	Server(Consumer<Serializable> call){
+	Server(Consumer<Serializable> call) {
 	
 		callback = call;
 		server = new TheServer();
@@ -102,6 +104,19 @@ public class Server {
 								//Someone wants a DM conversation
 								deliverDirectMessageRequest(gmIn.userA, gmIn.userB);
 							}
+							else if (gmIn.isUserGroup) {
+								//DM convo was accepted, this is the list of users to add
+								ArrayList<ClientThread> clientGroup = new ArrayList<>();
+								for (String s : gmIn.userList) {
+									ClientThread c = cl.get(s);
+									clientGroup.add(c);
+									//Notify them of what group number they will be in
+									c.out.writeObject(new GuiModder(-1, groupList.size()));
+								}
+								//clientGroup now holds all clients belonging to this dm group
+								groupList.add(clientGroup);
+
+							}
 					    	
 					    	}
 					    catch(Exception e) {
@@ -132,7 +147,7 @@ public class Server {
 
 		private void remindClient(ClientThread c) {
 			try {
-				c.out.writeObject(new GuiModder(c.count));
+				c.out.writeObject(new GuiModder(c.count, -1));
 			}
 			catch (IOException e) {
 				System.out.println("Failed to remind the client who they are :(");

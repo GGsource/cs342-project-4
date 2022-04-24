@@ -65,4 +65,13 @@ public class Client extends Thread{
 			e.printStackTrace();
 		}
 	}
+	public void sendGroup (String ... users) {
+		try {
+			out.writeObject(new GuiModder(users));
+		}
+		catch (IOException e) {
+			System.out.println("Failed to send array of user names for new DM group...");
+			e.printStackTrace();
+		}
+	}
 }

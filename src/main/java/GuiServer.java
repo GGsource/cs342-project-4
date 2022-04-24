@@ -17,6 +17,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -28,6 +29,7 @@ public class GuiServer extends Application{
 	ArrayList<String> userNameList = new ArrayList<>();
 	String iAm;
 	Scene prevScene;
+	int groupIndex = -1;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -127,7 +129,18 @@ public class GuiServer extends Application{
 						//This user is being asked if they want to DM
 						//Give an option screen
 						prevScene = primaryStage.getScene();
-						primaryStage.setScene(createDMConfirmGui(primaryStage, gmData.userA));
+						Stage confirmStage = createDMConfirmGui(primaryStage, gmData.userA);
+						confirmStage.initModality(Modality.APPLICATION_MODAL);
+						confirmStage.initOwner(primaryStage);
+						confirmStage.show();
+						Coord pos = getCenterPoint(primaryStage, confirmStage);
+						confirmStage.setX(pos.x);
+						confirmStage.setY(pos.y);
+						
+					}
+					if (gmData.isGroupAssignment) {
+						//Now we know what group dm we belong to
+						groupIndex = gmData.groupAssignment;
 					}
 				});
 			});
@@ -215,13 +228,13 @@ public class GuiServer extends Application{
 			if (chosenButton != null) { //In case the user selected nothing
 				String chosenUser = chosenButton.getText();
 				clientConnection.directMessage(iAm, chosenUser);
-				givenStage.setScene(createDMWaitingGui(chosenUser));
+				givenStage.setScene(createGroupDMGUI());
 			}
 		});
 		return new Scene(dmSelectBox, 200, 200);
 	}
 
-	private Scene createDMConfirmGui(Stage givenStage, String requestingUser) {
+	private Stage createDMConfirmGui(Stage givenStage, String requestingUser) {
 		Label requesterLabel = new Label(requestingUser + " would like to Direct Message with you");
 		requesterLabel.setWrapText(true);
 		Button declineButton = new Button("Decline");
@@ -231,26 +244,75 @@ public class GuiServer extends Application{
 		VBox confirmBox = new VBox(10, requesterLabel, optionBox);
 		confirmBox.setAlignment(Pos.CENTER);
 
+		Scene confirmScene = new Scene(confirmBox, 300, 100);
+		Stage cStage = new Stage();
+		cStage.setScene(confirmScene);
+
 		declineButton.setOnAction(e->{
-			givenStage.setScene(prevScene);
+			//givenStage.setScene(prevScene);
+			cStage.close();
 		});
 		acceptButton.setOnAction(e->{
-			//User accepted request
-			//TODO: Take this user to DM screen
-			//TODO: Take user who requested to DM screen
+			//User accepted request, close this popup
+			cStage.close();
+			//DONE: Add both users to a new userGroup
+			clientConnection.sendGroup(requestingUser, iAm);
+			
+			//DONE: Take this user to DM screen
+			givenStage.setScene(createGroupDMGUI());
+
+			//On DM group screen, the send button will send a GuiModder(String msg, int groupIndex)
 		});
 
-		return new Scene(confirmBox, 300, 100);
+		return cStage;
 	}
-	private Scene createDMWaitingGui(String requestedUser) {
-		Label requestingLabel = new Label("Waiting for "+ requestedUser +" to accept your Direct Message request");
-		requestingLabel.setWrapText(true);
-		return new Scene(requestingLabel, 300, 100);
+	// private Scene createDMWaitingGui(String requestedUser) {
+	// 	Label requestingLabel = new Label("Waiting for "+ requestedUser +" to accept your Direct Message request");
+	// 	requestingLabel.setWrapText(true);
+	// 	return new Scene(requestingLabel, 300, 100);
+	// }
+
+	private Scene createGroupDMGUI() {
+		Label groupLabel = new Label("Group Messaging");
+		ListView<String> groupChatView = new ListView<>();
+		TextField groupInputField = new TextField();
+		groupInputField.setPromptText("Message Group");
+		Button sendButton = new Button("Send");
+		HBox inputBox = new HBox(10, groupInputField, sendButton);
+		VBox groupLeftBox = new VBox(10, groupLabel, groupChatView, inputBox);
+		Label participantsLabel = new Label("Participants: ");
+		ListView<String> participantsView = new ListView<>();
+		Button returnButton = new Button("Return");
+		VBox groupRightBox = new VBox(10, participantsLabel, participantsView, returnButton);
+		HBox groupBox = new HBox(10, groupLeftBox, groupRightBox);
+		//Center everything
+		inputBox.setAlignment(Pos.CENTER);
+		groupLeftBox.setAlignment(Pos.CENTER);
+		groupRightBox.setAlignment(Pos.CENTER);
+		groupBox.setAlignment(Pos.CENTER);
+		groupBox.setPadding(new Insets(10));
+		//Adjust list sizes
+		participantsView.setPrefWidth(70);
+		//Send back the scene
+		return new Scene(groupBox, 400, 300);
+		//TODO: Return button adds user back to client list in server wide chat
+		//Return button
+		//Send button
+
 	}
 
-	private Scene createGroupSelectionGui() {
-		//TODO: Implement group DM
-		Label groupTitleLabel = new Label();
-		return null;
+	//Helper Function
+	private Coord getCenterPoint(Stage parentStage, Stage childStage) {
+		double startX = parentStage.getX();
+		double lenX = parentStage.getWidth();
+		double childWidth = childStage.getWidth();
+		double x = (startX + Math.round(lenX/2.0)) - Math.round(childWidth/2.0);
+
+		double startY = parentStage.getY();
+		double lenY = parentStage.getHeight();
+		double childHeight = childStage.getHeight();
+		double y = (startY + Math.round(lenY/2.0)) - Math.round(childHeight/2.0);
+
+		return new Coord(x, y);
 	}
 }
