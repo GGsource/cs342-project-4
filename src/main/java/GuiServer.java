@@ -6,8 +6,10 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
@@ -33,8 +35,10 @@ public class GuiServer extends Application{
 	ListView<String> groupChatView;
 	TextField groupInputField;
 	String chosenUser;
+	ArrayList<String> chosenUsers;
 	ListView<String> participantsView;
 	Label participantsLabel;
+	boolean isIndividual = false;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -133,6 +137,7 @@ public class GuiServer extends Application{
 					else if (gmData.isDMRequest) {
 						//This user is being asked if they want to DM
 						//Give an option screen
+						//FIXME: is prevScene still needed
 						prevScene = primaryStage.getScene();
 						Stage confirmStage = createDMConfirmGui(primaryStage, gmData.userA, gmData.groupAssignment);
 						confirmStage.initModality(Modality.APPLICATION_MODAL);
@@ -152,7 +157,10 @@ public class GuiServer extends Application{
 						//Now we know what group dm we belong to
 						groupIndex = gmData.groupAssignment;
 						// System.out.println("this client just created a groupDM, groupIndex is now: "+groupIndex);
-						clientConnection.directMessage(iAm, chosenUser, groupIndex);
+						if (isIndividual)
+							clientConnection.directMessage(iAm, chosenUser, groupIndex);
+						else
+							clientConnection.groupMessage(iAm, chosenUsers, groupIndex);
 					}
 					else if (gmData.isGroupMessage) {
 						groupChatView.getItems().add(gmData.msg);
@@ -167,6 +175,23 @@ public class GuiServer extends Application{
 						//Sort the list of items just added
 						userNameList.sort(null);
 						participantsView.getItems().addAll(userNameList);
+					}
+					else if (gmData.isGroupRequest) {
+						//This user is being asked if they want to join the group chat
+						//Give an option screen
+						//FIXME: is prevScene still needed?
+						prevScene = primaryStage.getScene();
+						Stage confirmStage = createDMConfirmGui(primaryStage, gmData.userA, gmData.groupAssignment);
+						confirmStage.initModality(Modality.APPLICATION_MODAL);
+						confirmStage.initOwner(primaryStage);
+						confirmStage.show();
+						Coord pos = getCenterPoint(primaryStage, confirmStage);
+						confirmStage.setX(pos.x);
+						confirmStage.setY(pos.y);
+						//TODO: Give this popup window a title
+						//TODO: Give popup an icon
+						//TODO: make popup unable to be maximized
+						//TODO: make so closing the popup rejects invite
 					}
 				});
 			});
@@ -209,9 +234,15 @@ public class GuiServer extends Application{
 		});
 		Button dmButton = new Button("Direct Message");
 		dmButton.setOnAction(e->{
-			givenStage.setScene(createDMSelectionGui(givenStage));
+			isIndividual = true;
+			givenStage.setScene(createGroupSelectionGui(givenStage));
 		});
 		Button groupButton = new Button("Group Message");
+		groupButton.setOnAction(e->{
+			isIndividual = false;
+			//TODO: Implement group button functionality
+			givenStage.setScene(createGroupSelectionGui(givenStage));
+		});
 		HBox msgButtonsBox = new HBox(sendButton, dmButton, groupButton);
 		VBox chatBox = new VBox(10, clientDialogueView, clientInputField, msgButtonsBox);
 		VBox usersBox = new VBox(clientUserList);
@@ -221,28 +252,39 @@ public class GuiServer extends Application{
 		return new Scene(clientBox, 500, 300);
 	}
 
-	private Scene createDMSelectionGui(Stage givenStage) {
+	private Scene createGroupSelectionGui(Stage givenStage) {
 		//TODO: Make this scene be a popup instead
-		Label dmTitleLabel = new Label("Select who you would like to direct message");
-		dmTitleLabel.setWrapText(true);
+		Label groupTitleLabel = new Label("Select who you would like to message");
+		groupTitleLabel.setWrapText(true);
 		VBox usersBox = new VBox();
-		//DONE: radial list of user names from userNamesSet
 		ToggleGroup tg = new ToggleGroup();
-		for (String user : userNameList) {
-			// System.out.println("User: " + user);
-			if (!user.contains(iAm)) { //Only can dm people who are not yourself!
-				// System.out.println("iam is \""+iAm+"\"");
-				// System.out.println("user is \""+user+"\"");
-				RadioButton r = new RadioButton(user);
-				usersBox.getChildren().add(r);
-				r.setToggleGroup(tg);
+		if (isIndividual) {
+			//DONE: radial list of user names from userNamesSet
+			for (String user : userNameList) {
+				// System.out.println("User: " + user);
+				if (!user.contains(iAm)) { //Only can dm people who are not yourself!
+					// System.out.println("iam is \""+iAm+"\"");
+					// System.out.println("user is \""+user+"\"");
+					RadioButton r = new RadioButton(user);
+					usersBox.getChildren().add(r);
+					r.setToggleGroup(tg);
+				}
+			}
+		}
+		else { //Its a group DM, not 1 on 1
+			//TODO: Create checkbox of users currently available into usersBox
+			for (String user: userNameList) {
+				if (!user.contains(iAm)) {
+					CheckBox chk = new CheckBox(user);
+					usersBox.getChildren().add(chk);
+				}
 			}
 		}
 		Button cancelButton = new Button("Cancel");
 		Button confirmButton = new Button("Confirm");
 		HBox confirmationBox = new HBox(10, cancelButton, confirmButton);
 		confirmationBox.setAlignment(Pos.CENTER);
-		VBox dmSelectBox = new VBox(10, dmTitleLabel, usersBox, confirmationBox);
+		VBox dmSelectBox = new VBox(10, groupTitleLabel, usersBox, confirmationBox);
 		dmSelectBox.setAlignment(Pos.CENTER);
 
 		//Cancel button action
@@ -251,21 +293,34 @@ public class GuiServer extends Application{
 		});
 		//Confirm button action
 		confirmButton.setOnAction(e->{
-			RadioButton chosenButton = (RadioButton)tg.getSelectedToggle();
-			if (chosenButton != null) { //In case the user selected nothing
-				chosenUser = chosenButton.getText();
-				//System.out.println("this client is about to create a groupDM, groupIndex is: "+groupIndex);
-				clientConnection.createGroup(new User(iAm));
-				givenStage.setScene(createGroupDMGUI(givenStage));
-
-				//FIXME:
+			if (isIndividual) {
+				RadioButton chosenButton = (RadioButton)tg.getSelectedToggle();
+				if (chosenButton != null) { //In case the user selected nothing
+					chosenUser = chosenButton.getText();
+					//System.out.println("this client is about to create a groupDM, groupIndex is: "+groupIndex);
+				}
 			}
+			else {
+				chosenUsers = new ArrayList<>();
+				for (Node n : usersBox.getChildren()) {
+					CheckBox c = (CheckBox)n;
+					if (c.isSelected()) {
+						//add it to a list of users we will add to our group convo
+						chosenUser = c.getText();
+						// System.out.println("chosenUser has: "+chosenUser);
+						chosenUsers.add(chosenUser);
+					} 
+				}
+				//chosenUsers now contains everyone who will be asked to join the group
+			}
+			clientConnection.createGroup(new User(iAm));
+			givenStage.setScene(createGroupDMGUI(givenStage));
 		});
 		return new Scene(dmSelectBox, 200, 200);
 	}
 
 	private Stage createDMConfirmGui(Stage givenStage, String requestingUser, int groupNum) {
-		Label requesterLabel = new Label(requestingUser + " would like to Direct Message with you");
+		Label requesterLabel = new Label(requestingUser + " would like to Message with you");
 		requesterLabel.setWrapText(true);
 		Button declineButton = new Button("Decline");
 		Button acceptButton = new Button("Accept");
@@ -298,7 +353,7 @@ public class GuiServer extends Application{
 	}
 
 	private Scene createGroupDMGUI(Stage givenStage) {
-		Label groupLabel = new Label("Group Messaging");
+		Label groupLabel = new Label("Group Chat");
 		groupChatView = new ListView<>();
 		groupInputField = new TextField();
 		groupInputField.setPromptText("Message Group");

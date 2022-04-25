@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,6 +15,7 @@ public class GuiModder implements Serializable {
     public boolean isGroupAssignment = false;
     public boolean isGroupMessage = false;
     public boolean isGroupListUpdate = false;
+    public boolean isGroupRequest = false;
     
     public String msg;
     public HashSet<String> set;
@@ -23,6 +25,7 @@ public class GuiModder implements Serializable {
     User seeder;
     User participant;
     int groupAssignment;
+    ArrayList<String> groupUsers;
 
 
     GuiModder(String message) {
@@ -55,6 +58,16 @@ public class GuiModder implements Serializable {
         isDMRequest = true;
         userA = requestingUser;
         userB = receivingUser;
+        groupAssignment = groupNum;
+    }
+
+    GuiModder(String requestingUser, ArrayList<String> receivingUsers, int groupNum) {
+        isGroupRequest = true;
+        userA = requestingUser;
+        groupUsers = new ArrayList<>();
+        for (String s : receivingUsers) {
+            groupUsers.add(s);
+        }
         groupAssignment = groupNum;
     }
 

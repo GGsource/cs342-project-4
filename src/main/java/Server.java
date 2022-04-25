@@ -123,6 +123,10 @@ public class Server {
 								//updateGroupMemberList();
 								messageGroup(name+" said: "+gmIn.msg, gmIn.groupAssignment);
 							}
+							else if (gmIn.isGroupRequest) {
+								//Someone wants a DM conversation
+								deliverGroupRequest(gmIn.userA, gmIn.groupUsers, gmIn.groupAssignment);
+							}
 					    	
 						}
 					    catch(Exception e) {
@@ -177,7 +181,7 @@ public class Server {
 
 		private void deliverDirectMessageRequest(String userRequesting , String userToRequest, int groupNum) {
 			ClientThread clientB = cl.get(userToRequest);
-			System.out.println("Server is sending dm request with groupNum as: "+groupNum);
+			//System.out.println("Server is sending dm request with groupNum as: "+groupNum);
 			try {
 				clientB.out.writeObject(new GuiModder(userRequesting, userToRequest, groupNum));
 			}
@@ -220,6 +224,20 @@ public class Server {
 					System.out.println("Failed to give a client in this group an updated participant list");
 					e.printStackTrace();
 				}
+			}
+		}
+
+		private void deliverGroupRequest(String userRequesting , ArrayList<String> usersReceiving, int groupNum) {
+			for (String s : usersReceiving) {
+				ClientThread clientReceiving = cl.get(s);
+				try {
+					clientReceiving.out.writeObject(new GuiModder(userRequesting, usersReceiving, groupNum));
+				}
+				catch (IOException e) {
+					System.out.println("Failed to notify other group users that user A wanted to group message them...");
+					e.printStackTrace();
+				}
+
 			}
 		}
 }

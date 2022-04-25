@@ -3,6 +3,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import javafx.application.Platform;
@@ -98,6 +99,16 @@ public class Client extends Thread{
 		}
 		catch (IOException e) {
 			System.out.println("Failed to send message to group #"+groupNum+"...");
+			e.printStackTrace();
+		}
+	}
+	public void groupMessage(String userA, ArrayList<String> chosenGroup, int groupNum) {
+		//User A has requested a DM chat with all members specified in chosenGroup
+		try {
+			out.writeObject(new GuiModder(userA, chosenGroup, groupNum));
+		}
+		catch (IOException e) {
+			System.out.println("Failed to send group invite request to server...");
 			e.printStackTrace();
 		}
 	}
