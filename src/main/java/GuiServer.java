@@ -225,6 +225,8 @@ public class GuiServer extends Application{
 	}
 	
 	public Scene createClientGui(Stage givenStage) {
+		//TODO: give window title of "Server-wide Chat"
+		//TODO: move users: x to be outside the listview as a new label next to title
 		TextField clientInputField = new TextField();
 		clientInputField.setPromptText("Message to server");
 		Button sendButton = new Button("Send");
@@ -240,10 +242,10 @@ public class GuiServer extends Application{
 		Button groupButton = new Button("Group Message");
 		groupButton.setOnAction(e->{
 			isIndividual = false;
-			//TODO: Implement group button functionality
 			givenStage.setScene(createGroupSelectionGui(givenStage));
 		});
 		HBox msgButtonsBox = new HBox(sendButton, dmButton, groupButton);
+		//TODO: give msgButtonsBox some spacing in hbox
 		VBox chatBox = new VBox(10, clientDialogueView, clientInputField, msgButtonsBox);
 		VBox usersBox = new VBox(clientUserList);
 		chatBox.setStyle("-fx-background-color: blue");
@@ -409,4 +411,6 @@ public class GuiServer extends Application{
 
 		return new Coord(x, y);
 	}
+
+	//TODO: Make clients rotate between color themes for icons and backgrounds? maybe...
 }
