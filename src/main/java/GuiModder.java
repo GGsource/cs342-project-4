@@ -4,7 +4,7 @@ import java.util.Set;
 
 public class GuiModder implements Serializable {
     public boolean isMessage = false;
-    public boolean isUserUpdate = false;
+    public boolean isUserListUpdate = false;
     public boolean isReminder = false;
     public boolean isDMRequest = false;
     public boolean isCreatingGroup = false;
@@ -13,6 +13,7 @@ public class GuiModder implements Serializable {
     public boolean isRequestingGroupAssignment = false;
     public boolean isGroupAssignment = false;
     public boolean isGroupMessage = false;
+    public boolean isGroupListUpdate = false;
     
     public String msg;
     public HashSet<String> set;
@@ -28,8 +29,11 @@ public class GuiModder implements Serializable {
         isMessage = true;
         msg = message;
     }
-    GuiModder(Set<String> s) {
-        isUserUpdate = true;
+    GuiModder(Set<String> s, boolean isServerWideUpdate) {
+        if (isServerWideUpdate)
+            isUserListUpdate = true;
+        else
+            isGroupListUpdate = true;
         set = new HashSet<>();
         for (String str : s) {
             set.add(str);
@@ -61,6 +65,7 @@ public class GuiModder implements Serializable {
 
     GuiModder(User usr, int GroupNum, boolean isJoining) {
         participant = usr;
+        groupAssignment = GroupNum;
         if (isJoining) {
             isJoiningGroup = true;
         }

@@ -33,6 +33,8 @@ public class GuiServer extends Application{
 	ListView<String> groupChatView;
 	TextField groupInputField;
 	String chosenUser;
+	ListView<String> participantsView;
+	Label participantsLabel;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -83,7 +85,7 @@ public class GuiServer extends Application{
 							//It's a message, display in server
 							serverDialogueView.getItems().add(gmData.msg);	
 						}
-						if (gmData.isUserUpdate) {
+						if (gmData.isUserListUpdate) {
 							//It's an update to who has left or joined
 							//System.out.println("isUserUpdate was true! adding:" + gmData.clients);
 							userNameList.clear();
@@ -115,7 +117,7 @@ public class GuiServer extends Application{
 						//System.out.println("This client received a message!");
 						clientDialogueView.getItems().add(gmData.msg);
 					}
-					else if (gmData.isUserUpdate) {
+					else if (gmData.isUserListUpdate) {
 						//System.out.println("Incoming user list update!");
 						userNameList.clear(); //reset the set we have saved to refill
 						clientUserList.getItems().clear();
@@ -152,8 +154,19 @@ public class GuiServer extends Application{
 						// System.out.println("this client just created a groupDM, groupIndex is now: "+groupIndex);
 						clientConnection.directMessage(iAm, chosenUser, groupIndex);
 					}
-					else if(gmData.isGroupMessage) {
+					else if (gmData.isGroupMessage) {
 						groupChatView.getItems().add(gmData.msg);
+					}
+					else if (gmData.isGroupListUpdate) {
+						userNameList.clear(); //reset the set we have saved to refill
+						participantsView.getItems().clear();
+						participantsLabel.setText("Participants: " + gmData.set.size());
+						for (String s : gmData.set) {
+							userNameList.add(s);
+						}
+						//Sort the list of items just added
+						userNameList.sort(null);
+						participantsView.getItems().addAll(userNameList);
 					}
 				});
 			});
@@ -292,8 +305,8 @@ public class GuiServer extends Application{
 		Button sendButton = new Button("Send");
 		HBox inputBox = new HBox(10, groupInputField, sendButton);
 		VBox groupLeftBox = new VBox(10, groupLabel, groupChatView, inputBox);
-		Label participantsLabel = new Label("Participants: ");
-		ListView<String> participantsView = new ListView<>();
+		participantsLabel = new Label("Participants: ");
+		participantsView = new ListView<>();
 		Button returnButton = new Button("Return");
 		VBox groupRightBox = new VBox(10, participantsLabel, participantsView, returnButton);
 		HBox groupBox = new HBox(10, groupLeftBox, groupRightBox);

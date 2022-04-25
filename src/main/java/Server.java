@@ -33,7 +33,7 @@ public class Server {
 				try(ServerSocket mysocket = new ServerSocket(5555);) {
 					System.out.println("Server is waiting for a client!");
 					callback.accept(new GuiModder("Server has opened!"));
-					callback.accept(new GuiModder(cl.keySet()));
+					callback.accept(new GuiModder(cl.keySet(), true));
 					while(true) {
 						ClientThread c = new ClientThread(mysocket.accept(), count);
 						cl.put(c.name, c);
@@ -96,27 +96,28 @@ public class Server {
 								HashMap<String, ClientThread> clientGroup = new HashMap<>();
 								ClientThread c = cl.remove(gmIn.seeder.name);
 								//Notify creator of what group index they have
-								updateGroupIndex(c);
+								int gNdx = groupList.size();
+								updateGroupIndex(c, gNdx);
 
 								clientGroup.put(c.name, c);
 								//Now add this group to our list of groups
 								groupList.add(clientGroup);
 								updateClientsList(); //Show theyre no longer available
-								updateGroupMemberList(); //Show theyre now available in the group
+								updateGroupMemberList(gNdx); //Show theyre now available in the group
 							}
 							else if (gmIn.isJoiningGroup) {
 								//A user accepted invite to group DM
 								ClientThread c = cl.remove(gmIn.participant.name);
 								groupList.get(gmIn.groupAssignment).put(c.name, c);
 								updateClientsList(); //Show theyre no longer available
-								updateGroupMemberList(); //Show theyre now available in the group
+								updateGroupMemberList(gmIn.groupAssignment); //Show theyre now available in the group
 							}
 							else if (gmIn.isLeavingGroup) {
 								//A user has chosen to return to serverwide chat
 								ClientThread c = groupList.get(gmIn.groupAssignment).remove(gmIn.participant.name);
 								cl.put(c.name, c);
 								updateClientsList(); //Show theyre no longer available
-								updateGroupMemberList(); //Show theyre now available in the group
+								updateGroupMemberList(gmIn.groupAssignment); //Show theyre now available in the group
 							}
 							else if (gmIn.isGroupMessage) {
 								//updateGroupMemberList();
@@ -152,10 +153,10 @@ public class Server {
 		}
 		
 		public void updateClientsList() {
-			callback.accept(new GuiModder(cl.keySet()));
+			callback.accept(new GuiModder(cl.keySet(), true));
 			for (ClientThread c: cl.values()) {
 				try {
-					c.out.writeObject(new GuiModder(cl.keySet()));
+					c.out.writeObject(new GuiModder(cl.keySet(), true));
 				}
 				catch (IOException e) {
 					System.out.println("Failed to give a client an updated user list");
@@ -186,10 +187,10 @@ public class Server {
 			}
 		}
 
-		private void updateGroupIndex(ClientThread creator) {
+		private void updateGroupIndex(ClientThread creator, int gNdx) {
 			try {
-				System.out.println("Server is about to tell "+creator.name+" to set groupIndex to " + groupList.size());
-				creator.out.writeObject(new GuiModder(new Group(groupList.size())));
+				// System.out.println("Server is about to tell "+creator.name+" to set groupIndex to " + gNdx);
+				creator.out.writeObject(new GuiModder(new Group(gNdx)));
 			}
 			catch (IOException e) {
 				System.out.println("Failed to notify group creator of their new group's index...");
@@ -209,7 +210,16 @@ public class Server {
 			}
 		}
 
-		private void updateGroupMemberList () {
-
+		private void updateGroupMemberList (int groupNdx) {
+			HashMap<String, ClientThread> groupMap = groupList.get(groupNdx);
+			for (ClientThread c: groupMap.values()) {
+				try {
+					c.out.writeObject(new GuiModder(groupMap.keySet(), false));
+				}
+				catch (IOException e) {
+					System.out.println("Failed to give a client in this group an updated participant list");
+					e.printStackTrace();
+				}
+			}
 		}
 }
