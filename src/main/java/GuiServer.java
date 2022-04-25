@@ -412,5 +412,7 @@ public class GuiServer extends Application{
 		return new Coord(x, y);
 	}
 
+	//TODO: Look for places to make thread safe
+	//TODO: make test cases
 	//TODO: Make clients rotate between color themes for icons and backgrounds? maybe...
 }
