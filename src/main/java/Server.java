@@ -17,12 +17,14 @@ public class Server {
 	private Consumer<Serializable> callback;
 	//Create list of group DMs going on, with each group DM being a list of users
 	ArrayList<HashMap<String, ClientThread>> groupList = new ArrayList<>();
+	Lock lock;
 	
 	Server(Consumer<Serializable> call) {
 	
 		callback = call;
 		server = new TheServer();
 		server.start();
+		lock = new Lock(); //Create lock for all clients to use
 	}
 	
 	
@@ -31,7 +33,7 @@ public class Server {
 			public void run() {
 			
 				try(ServerSocket mysocket = new ServerSocket(5555);) {
-					System.out.println("Server is waiting for a client!");
+					//System.out.println("Server is waiting for a client!");
 					callback.accept(new GuiModder("Server has opened!"));
 					callback.accept(new GuiModder(cl.keySet(), true));
 					while(true) {
@@ -58,6 +60,7 @@ public class Server {
 			String name;
 			ObjectInputStream in;
 			ObjectOutputStream out;
+			Lock serverLock;
 			
 			ClientThread(Socket s, int count){
 				this.connection = s;
@@ -70,12 +73,13 @@ public class Server {
 					in = new ObjectInputStream(connection.getInputStream());
 					out = new ObjectOutputStream(connection.getOutputStream());
 					connection.setTcpNoDelay(true);	
+					serverLock = lock;
 				}
 				catch(Exception e) {
 					System.out.println("Streams not open");
 					e.printStackTrace();
 				}
-				
+				sendLock(this, serverLock);
 				messageClients("new client has connected: "+name);
 				updateClientsList();
 				remindClient(this);
@@ -238,6 +242,16 @@ public class Server {
 					e.printStackTrace();
 				}
 
+			}
+		}
+
+		private void sendLock(ClientThread c, Lock lock) {
+			try {
+				c.out.writeObject(lock);
+			}
+			catch (IOException e) {
+				System.out.println("Failed to deliver lock to client..");
+				e.printStackTrace();
 			}
 		}
 }

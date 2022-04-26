@@ -39,6 +39,7 @@ public class GuiServer extends Application{
 	ListView<String> participantsView;
 	Label participantsLabel;
 	boolean isIndividual = false;
+	Lock lock;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -73,8 +74,6 @@ public class GuiServer extends Application{
 		sceneMap = new HashMap<String, Scene>();
 		sceneMap.put("server",  createServerGui());
 		sceneMap.put("client",  createClientGui(primaryStage));
-
-		//TODO: make clicking a user on the userlist starts communication with them
 
 		//When pressing the server button
 		serverChoice.setOnAction(e->{
@@ -113,85 +112,90 @@ public class GuiServer extends Application{
 			clientConnection = new Client(data->{
 				Platform.runLater(()->{
 					GuiModder gmData = (GuiModder)data;
-					if (gmData.isReminder) {
-						iAm = gmData.name;
-						primaryStage.setTitle("You are " + iAm);
+					if (gmData.isLock) {
+						lock = gmData.serverLock; //Server has sent its lock
 					}
-					else if (gmData.isMessage) {
-						//System.out.println("This client received a message!");
-						clientDialogueView.getItems().add(gmData.msg);
-					}
-					else if (gmData.isUserListUpdate) {
-						//System.out.println("Incoming user list update!");
-						userNameList.clear(); //reset the set we have saved to refill
-						clientUserList.getItems().clear();
-						clientUserList.getItems().add("Users: " + gmData.set.size());
-						for (String s : gmData.set) {
-							userNameList.add(s);
-							//System.out.println(s);
+					synchronized (lock) {
+						if (gmData.isReminder) {
+							iAm = gmData.name;
+							primaryStage.setTitle("You are " + iAm);
 						}
-						//Sort the list of items just added
-						userNameList.sort(null);
-						clientUserList.getItems().addAll(userNameList);
-					}
-					else if (gmData.isDMRequest) {
-						//This user is being asked if they want to DM
-						//Give an option screen
-						//FIXME: is prevScene still needed
-						prevScene = primaryStage.getScene();
-						Stage confirmStage = createDMConfirmGui(primaryStage, gmData.userA, gmData.groupAssignment);
-						confirmStage.initModality(Modality.APPLICATION_MODAL);
-						confirmStage.initOwner(primaryStage);
-						confirmStage.show();
-						Coord pos = getCenterPoint(primaryStage, confirmStage);
-						confirmStage.setX(pos.x);
-						confirmStage.setY(pos.y);
-						//TODO: Give this popup window a title
-						//TODO: Give popup an icon
-						//TODO: make popup unable to be maximized
-						//TODO: make so closing the popup rejects invite
-						
-					}
-					else if (gmData.isGroupAssignment) {
-						//System.out.println("groupIndex was just set to "+gmData.groupAssignment);
-						//Now we know what group dm we belong to
-						groupIndex = gmData.groupAssignment;
-						// System.out.println("this client just created a groupDM, groupIndex is now: "+groupIndex);
-						if (isIndividual)
-							clientConnection.directMessage(iAm, chosenUser, groupIndex);
-						else
-							clientConnection.groupMessage(iAm, chosenUsers, groupIndex);
-					}
-					else if (gmData.isGroupMessage) {
-						groupChatView.getItems().add(gmData.msg);
-					}
-					else if (gmData.isGroupListUpdate) {
-						userNameList.clear(); //reset the set we have saved to refill
-						participantsView.getItems().clear();
-						participantsLabel.setText("Participants: " + gmData.set.size());
-						for (String s : gmData.set) {
-							userNameList.add(s);
+						else if (gmData.isMessage) {
+							//System.out.println("This client received a message!");
+							clientDialogueView.getItems().add(gmData.msg);
 						}
-						//Sort the list of items just added
-						userNameList.sort(null);
-						participantsView.getItems().addAll(userNameList);
-					}
-					else if (gmData.isGroupRequest) {
-						//This user is being asked if they want to join the group chat
-						//Give an option screen
-						//FIXME: is prevScene still needed?
-						prevScene = primaryStage.getScene();
-						Stage confirmStage = createDMConfirmGui(primaryStage, gmData.userA, gmData.groupAssignment);
-						confirmStage.initModality(Modality.APPLICATION_MODAL);
-						confirmStage.initOwner(primaryStage);
-						confirmStage.show();
-						Coord pos = getCenterPoint(primaryStage, confirmStage);
-						confirmStage.setX(pos.x);
-						confirmStage.setY(pos.y);
-						//TODO: Give this popup window a title
-						//TODO: Give popup an icon
-						//TODO: make popup unable to be maximized
-						//TODO: make so closing the popup rejects invite
+						else if (gmData.isUserListUpdate) {
+							//System.out.println("Incoming user list update!");
+							userNameList.clear(); //reset the set we have saved to refill
+							clientUserList.getItems().clear();
+							clientUserList.getItems().add("Users: " + gmData.set.size());
+							for (String s : gmData.set) {
+								userNameList.add(s);
+								//System.out.println(s);
+							}
+							//Sort the list of items just added
+							userNameList.sort(null);
+							clientUserList.getItems().addAll(userNameList);
+						}
+						else if (gmData.isDMRequest) {
+							//This user is being asked if they want to DM
+							//Give an option screen
+							//FIXME: is prevScene still needed
+							prevScene = primaryStage.getScene();
+							Stage confirmStage = createDMConfirmGui(primaryStage, gmData.userA, gmData.groupAssignment);
+							confirmStage.initModality(Modality.APPLICATION_MODAL);
+							confirmStage.initOwner(primaryStage);
+							confirmStage.show();
+							Coord pos = getCenterPoint(primaryStage, confirmStage);
+							confirmStage.setX(pos.x);
+							confirmStage.setY(pos.y);
+							//TODO: Give this popup window a title
+							//TODO: Give popup an icon
+							//TODO: make popup unable to be maximized
+							//TODO: make so closing the popup rejects invite
+							
+						}
+						else if (gmData.isGroupAssignment) {
+							//System.out.println("groupIndex was just set to "+gmData.groupAssignment);
+							//Now we know what group dm we belong to
+							groupIndex = gmData.groupAssignment;
+							// System.out.println("this client just created a groupDM, groupIndex is now: "+groupIndex);
+							if (isIndividual)
+								clientConnection.directMessage(iAm, chosenUser, groupIndex);
+							else
+								clientConnection.groupMessage(iAm, chosenUsers, groupIndex);
+						}
+						else if (gmData.isGroupMessage) {
+							groupChatView.getItems().add(gmData.msg);
+						}
+						else if (gmData.isGroupListUpdate) {
+							userNameList.clear(); //reset the set we have saved to refill
+							participantsView.getItems().clear();
+							participantsLabel.setText("Participants: " + gmData.set.size());
+							for (String s : gmData.set) {
+								userNameList.add(s);
+							}
+							//Sort the list of items just added
+							userNameList.sort(null);
+							participantsView.getItems().addAll(userNameList);
+						}
+						else if (gmData.isGroupRequest) {
+							//This user is being asked if they want to join the group chat
+							//Give an option screen
+							//FIXME: is prevScene still needed?
+							prevScene = primaryStage.getScene();
+							Stage confirmStage = createDMConfirmGui(primaryStage, gmData.userA, gmData.groupAssignment);
+							confirmStage.initModality(Modality.APPLICATION_MODAL);
+							confirmStage.initOwner(primaryStage);
+							confirmStage.show();
+							Coord pos = getCenterPoint(primaryStage, confirmStage);
+							confirmStage.setX(pos.x);
+							confirmStage.setY(pos.y);
+							//TODO: Give this popup window a title
+							//TODO: Give popup an icon
+							//TODO: make popup unable to be maximized
+							//TODO: make so closing the popup rejects invite
+						}
 					}
 				});
 			});

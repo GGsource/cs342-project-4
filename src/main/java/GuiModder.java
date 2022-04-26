@@ -16,6 +16,7 @@ public class GuiModder implements Serializable {
     public boolean isGroupMessage = false;
     public boolean isGroupListUpdate = false;
     public boolean isGroupRequest = false;
+    public boolean isLock = false;
     
     public String msg;
     public HashSet<String> set;
@@ -26,8 +27,13 @@ public class GuiModder implements Serializable {
     User participant;
     int groupAssignment;
     ArrayList<String> groupUsers;
+    Lock serverLock;
 
 
+    GuiModder (Lock l) {
+        isLock = true;
+        serverLock = l;
+    }
     GuiModder(String message) {
         isMessage = true;
         msg = message;
