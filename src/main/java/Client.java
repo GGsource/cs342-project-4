@@ -38,7 +38,7 @@ public class Client extends Thread{
 			}
 			catch (Exception e) {
 				System.out.println("I have disconnected from the server.");
-				//e.printStackTrace();
+				e.printStackTrace();
 				Platform.exit();
                 System.exit(0);
 			}

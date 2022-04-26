@@ -247,7 +247,7 @@ public class Server {
 
 		private void sendLock(ClientThread c, Lock lock) {
 			try {
-				c.out.writeObject(lock);
+				c.out.writeObject(new GuiModder(lock));
 			}
 			catch (IOException e) {
 				System.out.println("Failed to deliver lock to client..");
