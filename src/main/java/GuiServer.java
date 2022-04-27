@@ -66,7 +66,7 @@ public class GuiServer extends Application{
 		serverDialogueView = new ListView<>();
 		clientUserList =	 new ListView<>();
 		serverUserList =	 new ListView<>();
-		clientDialogueView.setPrefWidth(425);
+		clientDialogueView.setPrefWidth(395);
 		clientUserList.setPrefWidth(70);
 		serverUserList.setPrefWidth(70);
 
@@ -241,25 +241,37 @@ public class GuiServer extends Application{
 		Button dmButton = new Button("Direct Message");
 		dmButton.setOnAction(e->{
 			isIndividual = true;
-			givenStage.setScene(createGroupSelectionGui(givenStage));
+			Stage dmStage = createGroupSelectionGui(givenStage);
+			dmStage.initModality(Modality.APPLICATION_MODAL);
+			dmStage.initOwner(givenStage);
+			dmStage.show();
+			Coord pos = getCenterPoint(givenStage, dmStage);
+			dmStage.setX(pos.x);
+			dmStage.setY(pos.y);
 		});
 		Button groupButton = new Button("Group Message");
 		groupButton.setOnAction(e->{
 			isIndividual = false;
-			givenStage.setScene(createGroupSelectionGui(givenStage));
+			Stage groupStage = createGroupSelectionGui(givenStage);
+			groupStage.initModality(Modality.APPLICATION_MODAL);
+			groupStage.initOwner(givenStage);
+			groupStage.show();
+			Coord pos = getCenterPoint(givenStage, groupStage);
+			groupStage.setX(pos.x);
+			groupStage.setY(pos.y);
 		});
-		HBox msgButtonsBox = new HBox(sendButton, dmButton, groupButton);
-		//TODO: give msgButtonsBox some spacing in hbox
+		HBox msgButtonsBox = new HBox(20, sendButton, dmButton, groupButton);
+		msgButtonsBox.setAlignment(Pos.CENTER);
 		VBox chatBox = new VBox(10, clientDialogueView, clientInputField, msgButtonsBox);
 		VBox usersBox = new VBox(clientUserList);
 		chatBox.setStyle("-fx-background-color: blue");
 		HBox clientBox = new HBox(10, chatBox, usersBox);
 		clientBox.setStyle("-fx-background-color: blue");
+		clientBox.setPadding(new Insets(10));
 		return new Scene(clientBox, 500, 300);
 	}
 
-	private Scene createGroupSelectionGui(Stage givenStage) {
-		//TODO: Make this scene be a popup instead
+	private Stage createGroupSelectionGui(Stage givenStage) {
 		Label groupTitleLabel = new Label("Select who you would like to message");
 		groupTitleLabel.setWrapText(true);
 		VBox usersBox = new VBox();
@@ -267,10 +279,7 @@ public class GuiServer extends Application{
 		if (isIndividual) {
 			//DONE: radial list of user names from userNamesSet
 			for (String user : userNameList) {
-				// System.out.println("User: " + user);
 				if (!user.contains(iAm)) { //Only can dm people who are not yourself!
-					// System.out.println("iam is \""+iAm+"\"");
-					// System.out.println("user is \""+user+"\"");
 					RadioButton r = new RadioButton(user);
 					usersBox.getChildren().add(r);
 					r.setToggleGroup(tg);
@@ -278,7 +287,7 @@ public class GuiServer extends Application{
 			}
 		}
 		else { //Its a group DM, not 1 on 1
-			//TODO: Create checkbox of users currently available into usersBox
+			//DONE: Create checkbox of users currently available into usersBox
 			for (String user: userNameList) {
 				if (!user.contains(iAm)) {
 					CheckBox chk = new CheckBox(user);
@@ -293,12 +302,18 @@ public class GuiServer extends Application{
 		VBox dmSelectBox = new VBox(10, groupTitleLabel, usersBox, confirmationBox);
 		dmSelectBox.setAlignment(Pos.CENTER);
 
+		Scene returnScene = new Scene(dmSelectBox, 200, 200);
+		Stage rStage = new Stage();
+		rStage.setScene(returnScene);
+
 		//Cancel button action
 		cancelButton.setOnAction(e->{
-			givenStage.setScene(sceneMap.get("client"));
+			rStage.close(); //Close the popup now
+			//givenStage.setScene(sceneMap.get("client"));
 		});
 		//Confirm button action
 		confirmButton.setOnAction(e->{
+			rStage.close(); //Close the popup now
 			if (isIndividual) {
 				RadioButton chosenButton = (RadioButton)tg.getSelectedToggle();
 				if (chosenButton != null) { //In case the user selected nothing
@@ -322,7 +337,7 @@ public class GuiServer extends Application{
 			clientConnection.createGroup(new User(iAm));
 			givenStage.setScene(createGroupDMGUI(givenStage));
 		});
-		return new Scene(dmSelectBox, 200, 200);
+		return rStage;
 	}
 
 	private Stage createDMConfirmGui(Stage givenStage, String requestingUser, int groupNum) {
@@ -354,7 +369,6 @@ public class GuiServer extends Application{
 			givenStage.setScene(createGroupDMGUI(givenStage));
 			//On DM group screen, the send button will send a GuiModder(String msg, int groupIndex)
 		});
-
 		return cStage;
 	}
 
@@ -391,10 +405,8 @@ public class GuiServer extends Application{
 		});
 		//Send button
 		sendButton.setOnAction(e->{
-			//TODO: take text from inputfield and add to the listview
-			//TODO: send message to the server to tell other participants to receive msg
+			//DONE: take text from inputfield and send it to all the clients to display
 			clientConnection.groupSend(groupInputField.getText(), groupIndex);
-			//FIXME: groupIndexs is -1 at this time...
 			groupInputField.clear();
 		});
 		//Send back the scene
@@ -416,7 +428,5 @@ public class GuiServer extends Application{
 		return new Coord(x, y);
 	}
 
-	//TODO: Look for places to make thread safe
-	//TODO: make test cases
 	//TODO: Make clients rotate between color themes for icons and backgrounds? maybe...
 }
