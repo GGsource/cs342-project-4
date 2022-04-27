@@ -30,7 +30,6 @@ public class GuiServer extends Application{
 	Client clientConnection;
 	ArrayList<String> userNameList = new ArrayList<>();
 	String iAm;
-	Scene prevScene;
 	int groupIndex = -1;
 	ListView<String> groupChatView;
 	TextField groupInputField;
@@ -138,23 +137,23 @@ public class GuiServer extends Application{
 							userNameList.sort(null);
 							clientUserList.getItems().addAll(userNameList);
 						}
-						else if (gmData.isDMRequest) {
-							//This user is being asked if they want to DM
-							//Give an option screen
-							//FIXME: is prevScene still needed
-							prevScene = primaryStage.getScene();
+						else if (gmData.isDMRequest || gmData.isGroupRequest) {
+							//This user is being asked if they want to join a group/dm, give popup to accept
 							Stage confirmStage = createDMConfirmGui(primaryStage, gmData.userA, gmData.groupAssignment);
+							//Make it so the client cannot use main stage until they deal w/ popup
 							confirmStage.initModality(Modality.APPLICATION_MODAL);
 							confirmStage.initOwner(primaryStage);
 							confirmStage.show();
+							//Center the popup on the client who needs to accept/decline
 							Coord pos = getCenterPoint(primaryStage, confirmStage);
 							confirmStage.setX(pos.x);
 							confirmStage.setY(pos.y);
-							//TODO: Give this popup window a title
-							//TODO: Give popup an icon
-							//TODO: make popup unable to be maximized
-							//TODO: make so closing the popup rejects invite
-							
+							//Give this popup window a title
+							confirmStage.setTitle("Group DM Invite");
+							//Give popup the same icon as client
+							confirmStage.getIcons().add(new Image("/images/chat_invite.png"));
+							//make popup unable to be maximized
+							confirmStage.setResizable(false);
 						}
 						else if (gmData.isGroupAssignment) {
 							//System.out.println("groupIndex was just set to "+gmData.groupAssignment);
@@ -179,23 +178,6 @@ public class GuiServer extends Application{
 							//Sort the list of items just added
 							userNameList.sort(null);
 							participantsView.getItems().addAll(userNameList);
-						}
-						else if (gmData.isGroupRequest) {
-							//This user is being asked if they want to join the group chat
-							//Give an option screen
-							//FIXME: is prevScene still needed?
-							prevScene = primaryStage.getScene();
-							Stage confirmStage = createDMConfirmGui(primaryStage, gmData.userA, gmData.groupAssignment);
-							confirmStage.initModality(Modality.APPLICATION_MODAL);
-							confirmStage.initOwner(primaryStage);
-							confirmStage.show();
-							Coord pos = getCenterPoint(primaryStage, confirmStage);
-							confirmStage.setX(pos.x);
-							confirmStage.setY(pos.y);
-							//TODO: Give this popup window a title
-							//TODO: Give popup an icon
-							//TODO: make popup unable to be maximized
-							//TODO: make so closing the popup rejects invite
 						}
 					}
 				});
@@ -236,7 +218,6 @@ public class GuiServer extends Application{
 	public Scene createClientGui(Stage givenStage) {
 		//give title of "Server-wide Chat"
 		Label chatLabel = new Label("Server-wide Chat");
-		//TODO: move users: x to be outside the listview as a new label next to title
 		clientUsersCountLabel = new Label("Users: 0");
 		TextField clientInputField = new TextField();
 		clientInputField.setPromptText("Message to server");
@@ -248,24 +229,12 @@ public class GuiServer extends Application{
 		Button dmButton = new Button("Direct Message");
 		dmButton.setOnAction(e->{
 			isIndividual = true;
-			Stage dmStage = createGroupSelectionGui(givenStage);
-			dmStage.initModality(Modality.APPLICATION_MODAL);
-			dmStage.initOwner(givenStage);
-			dmStage.show();
-			Coord pos = getCenterPoint(givenStage, dmStage);
-			dmStage.setX(pos.x);
-			dmStage.setY(pos.y);
+			createGroupInvitePopout(givenStage);
 		});
 		Button groupButton = new Button("Group Message");
 		groupButton.setOnAction(e->{
 			isIndividual = false;
-			Stage groupStage = createGroupSelectionGui(givenStage);
-			groupStage.initModality(Modality.APPLICATION_MODAL);
-			groupStage.initOwner(givenStage);
-			groupStage.show();
-			Coord pos = getCenterPoint(givenStage, groupStage);
-			groupStage.setX(pos.x);
-			groupStage.setY(pos.y);
+			createGroupInvitePopout(givenStage);
 		});
 		HBox msgButtonsBox = new HBox(20, sendButton, dmButton, groupButton);
 		msgButtonsBox.setAlignment(Pos.CENTER);
@@ -362,7 +331,6 @@ public class GuiServer extends Application{
 		cStage.setScene(confirmScene);
 
 		declineButton.setOnAction(e->{
-			//givenStage.setScene(prevScene);
 			cStage.close();
 		});
 		acceptButton.setOnAction(e->{
@@ -434,6 +402,30 @@ public class GuiServer extends Application{
 
 		return new Coord(x, y);
 	}
+	private void createGroupInvitePopout(Stage parentStage) {
+		Stage dmStage = createGroupSelectionGui(parentStage);
+		dmStage.initModality(Modality.APPLICATION_MODAL);
+		dmStage.initOwner(parentStage);
+		dmStage.show();
+		Coord pos = getCenterPoint(parentStage, dmStage);
+		dmStage.setX(pos.x);
+		dmStage.setY(pos.y);
+		dmStage.setTitle("Who to Invite?");
+		//Give popup the same icon as client
+		dmStage.getIcons().add(new Image("/images/chat_invite.png"));
+		//make popup unable to be maximized
+		dmStage.setResizable(false);
+	}
+	//TODO: Center everything
+	//TODO: Gradient background colors
+	//TODO: color for group DM
+	//TODO: maybe different color for 1 on 1 dm
+	//TODO: custom window title bars
+	//TODO: shift to style sheets
+	//TODO: make buttons uniform sizes
+	//TODO: color listviews
+	//TODO: darkmode theme
+	//TODO: make pressing enter in inputfield sends message
 
 	//TODO: Make clients rotate between color themes for icons and backgrounds? maybe...
 }
