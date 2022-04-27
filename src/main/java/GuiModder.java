@@ -48,11 +48,9 @@ public class GuiModder implements Serializable {
             set.add(str);
         }
     }
-    GuiModder(int groupNum, String givenName) {
-        if (groupNum == -1){ 
-            isReminder = true;
-            name = givenName;
-        }
+    GuiModder(Reminder r) {
+        isReminder = true;
+        name = r.name;
     }
 
     GuiModder(Group g) {

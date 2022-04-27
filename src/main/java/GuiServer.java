@@ -40,6 +40,8 @@ public class GuiServer extends Application{
 	Label participantsLabel;
 	boolean isIndividual = false;
 	Lock lock;
+	Label serverUsersCountLabel;
+	Label clientUsersCountLabel;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -93,7 +95,7 @@ public class GuiServer extends Application{
 							//System.out.println("isUserUpdate was true! adding:" + gmData.clients);
 							userNameList.clear();
 							serverUserList.getItems().clear(); //Reset the list
-							serverUserList.getItems().add("Users: " + gmData.set.size());
+							serverUsersCountLabel.setText("Users: " + gmData.set.size());
 							for (String s : gmData.set) {
 								userNameList.add(s);
 								//System.out.println(s);
@@ -128,10 +130,9 @@ public class GuiServer extends Application{
 							//System.out.println("Incoming user list update!");
 							userNameList.clear(); //reset the set we have saved to refill
 							clientUserList.getItems().clear();
-							clientUserList.getItems().add("Users: " + gmData.set.size());
+							clientUsersCountLabel.setText("Users: " + gmData.set.size());
 							for (String s : gmData.set) {
 								userNameList.add(s);
-								//System.out.println(s);
 							}
 							//Sort the list of items just added
 							userNameList.sort(null);
@@ -221,16 +222,22 @@ public class GuiServer extends Application{
 	
 	public Scene createServerGui() {
 		BorderPane pane = new BorderPane();
-		pane.setPadding(new Insets(70));
+		pane.setPadding(new Insets(50));
 		pane.setStyle("-fx-background-color: gold");
-		pane.setCenter(serverDialogueView);
-		pane.setRight(serverUserList);
+		serverUsersCountLabel = new Label("Users: 0");
+		Label serverChatLabel = new Label("Server-wide Chat");
+		VBox centerBox = new VBox(serverChatLabel, serverDialogueView);
+		pane.setCenter(centerBox);
+		VBox rightBox = new VBox(serverUsersCountLabel, serverUserList);
+		pane.setRight(rightBox);
 		return new Scene(pane, 500, 400);
 	}
 	
 	public Scene createClientGui(Stage givenStage) {
-		//TODO: give window title of "Server-wide Chat"
+		//give title of "Server-wide Chat"
+		Label chatLabel = new Label("Server-wide Chat");
 		//TODO: move users: x to be outside the listview as a new label next to title
+		clientUsersCountLabel = new Label("Users: 0");
 		TextField clientInputField = new TextField();
 		clientInputField.setPromptText("Message to server");
 		Button sendButton = new Button("Send");
@@ -262,8 +269,8 @@ public class GuiServer extends Application{
 		});
 		HBox msgButtonsBox = new HBox(20, sendButton, dmButton, groupButton);
 		msgButtonsBox.setAlignment(Pos.CENTER);
-		VBox chatBox = new VBox(10, clientDialogueView, clientInputField, msgButtonsBox);
-		VBox usersBox = new VBox(clientUserList);
+		VBox chatBox = new VBox(10, chatLabel, clientDialogueView, clientInputField, msgButtonsBox);
+		VBox usersBox = new VBox(clientUsersCountLabel, clientUserList);
 		chatBox.setStyle("-fx-background-color: blue");
 		HBox clientBox = new HBox(10, chatBox, usersBox);
 		clientBox.setStyle("-fx-background-color: blue");

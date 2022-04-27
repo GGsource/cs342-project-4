@@ -138,7 +138,7 @@ public class Server {
 					    	callback.accept(new GuiModder(name+" disconnected!"));
 							messageClients(name+" has left the server!");
 							updateClientsList();
-							e.printStackTrace();
+							//e.printStackTrace();
 					    	break;
 					    }
 					}
@@ -175,7 +175,7 @@ public class Server {
 
 		private void remindClient(ClientThread c) {
 			try {
-				c.out.writeObject(new GuiModder(-1, c.name));
+				c.out.writeObject(new GuiModder(new Reminder(c.name)));
 			}
 			catch (IOException e) {
 				System.out.println("Failed to remind the client who they are :(");
