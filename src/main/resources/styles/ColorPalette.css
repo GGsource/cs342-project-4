@@ -1,0 +1,9 @@
+.root {
+    /* Color Palette - Shared across application */
+    -server-primary:    #c38c00;
+    -server-secondary:  #9d7100;
+    -client-primary:    #0391FD;
+    -client-secondary:  #0F71D3;
+    -dark-primary:      #21252b;
+    -dark-secondary:    #1a1e23;
+}

@@ -57,8 +57,10 @@ public class GuiServer extends Application{
 		BorderPane titleBar = customizeBar(primaryStage, "Project 4: Advanced Chat");
 		//Server Button
 		Button serverChoice = new Button("Server");
+		serverChoice.getStyleClass().add("serverButton");
 		//Client Button
 		Button clientChoice = new Button("Client");
+		clientChoice.getStyleClass().add("clientButton");
 
 		//When pressing the server button
 		serverChoice.setOnAction(e->{
@@ -425,6 +427,7 @@ public class GuiServer extends Application{
 		closeButton.setOnAction(e->{Platform.exit(); System.exit(0);});
 		HBox windowBox = new HBox(minimizeButton, closeButton);
 		BorderPane titleBar = new BorderPane();
+		titleBar.getStyleClass().setAll("titleBar");
 		titleBar.setLeft(titleIcon);
 		titleBar.setCenter(titleLabel);
 		titleBar.setRight(windowBox);
