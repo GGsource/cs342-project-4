@@ -1,9 +1,7 @@
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -16,16 +14,17 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
+import javafx.stage.StageStyle;
 
 public class GuiServer extends Application{
 	ListView<String> clientDialogueView, serverDialogueView, clientUserList, serverUserList;
-	HashMap<String, Scene> sceneMap;
+	//HashMap<String, Scene> sceneMap;
 	Server serverConnection;
 	Client clientConnection;
 	ArrayList<String> userNameList = new ArrayList<>();
@@ -41,6 +40,9 @@ public class GuiServer extends Application{
 	Lock lock;
 	Label serverUsersCountLabel;
 	Label clientUsersCountLabel;
+	Scene serverWideChatScene;
+	double xOffset;
+	double yOffset;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -48,68 +50,44 @@ public class GuiServer extends Application{
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		primaryStage.setTitle("Project 4 Advanced Chat");
+		// //Window title and icon
+		primaryStage.setTitle("Project 4: Advanced Chat");
 		primaryStage.getIcons().add(new Image("/images/chat.png"));
-		
+		//Custom title bar!
+		BorderPane titleBar = customizeBar(primaryStage, "Project 4: Advanced Chat");
 		//Server Button
 		Button serverChoice = new Button("Server");
-		serverChoice.setStyle("-fx-pref-width: 300px");
-		serverChoice.setStyle("-fx-pref-height: 100px");
 		//Client Button
 		Button clientChoice = new Button("Client");
-		clientChoice.setStyle("-fx-pref-width: 300px");
-		clientChoice.setStyle("-fx-pref-height: 100px");
-		
-		HBox buttonBox = new HBox(100, serverChoice, clientChoice);
-		buttonBox.setAlignment(Pos.CENTER);
-		
-		clientDialogueView = new ListView<>();
-		serverDialogueView = new ListView<>();
-		clientUserList =	 new ListView<>();
-		serverUserList =	 new ListView<>();
-		clientDialogueView.setPrefWidth(395);
-		clientUserList.setPrefWidth(70);
-		serverUserList.setPrefWidth(70);
-
-		//Save Scenes
-		sceneMap = new HashMap<String, Scene>();
-		sceneMap.put("server",  createServerGui());
-		sceneMap.put("client",  createClientGui(primaryStage));
 
 		//When pressing the server button
 		serverChoice.setOnAction(e->{
-			primaryStage.setScene(sceneMap.get("server"));
-			primaryStage.setTitle("This is the Server");
-			primaryStage.getIcons().clear();
-			primaryStage.getIcons().add(new Image("/images/chat_server.png"));
-				serverConnection = new Server(data -> {
-					Platform.runLater(()->{
-						GuiModder gmData = (GuiModder)data;
-						if (gmData.isMessage) {
-							//It's a message, display in server
-							serverDialogueView.getItems().add(gmData.msg);	
+			primaryStage.setScene(createServerGui(primaryStage));
+			serverConnection = new Server(data -> {
+				Platform.runLater(()->{
+					GuiModder gmData = (GuiModder)data;
+					if (gmData.isMessage) {
+						//It's a message, display in server
+						serverDialogueView.getItems().add(gmData.msg);	
+					}
+					if (gmData.isUserListUpdate) {
+						//It's an update to who has left or joined
+						userNameList.clear();
+						serverUserList.getItems().clear(); //Reset the list
+						serverUsersCountLabel.setText("Users: " + gmData.set.size());
+						for (String s : gmData.set) {
+							userNameList.add(s);
 						}
-						if (gmData.isUserListUpdate) {
-							//It's an update to who has left or joined
-							//System.out.println("isUserUpdate was true! adding:" + gmData.clients);
-							userNameList.clear();
-							serverUserList.getItems().clear(); //Reset the list
-							serverUsersCountLabel.setText("Users: " + gmData.set.size());
-							for (String s : gmData.set) {
-								userNameList.add(s);
-								//System.out.println(s);
-							}
-							userNameList.sort(null);
-							serverUserList.getItems().addAll(userNameList);
-						}
-					});
+						userNameList.sort(null);
+						serverUserList.getItems().addAll(userNameList);
+					}
 				});
+			});
 		});
 		//When pressing the client button
 		clientChoice.setOnAction(e-> {
-			primaryStage.setScene(sceneMap.get("client"));
-			primaryStage.getIcons().clear();
-			primaryStage.getIcons().add(new Image("/images/chat_client.png"));
+			serverWideChatScene = createClientGui(primaryStage);
+			primaryStage.setScene(serverWideChatScene);
 			clientConnection = new Client(data->{
 				Platform.runLater(()->{
 					GuiModder gmData = (GuiModder)data;
@@ -185,37 +163,56 @@ public class GuiServer extends Application{
 			clientConnection.start();
 		});
 		//To ensure closing the window ends the program
-		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent t) {
-                Platform.exit();
-                System.exit(0);
-            }
+		primaryStage.setOnCloseRequest(close->{
+			Platform.exit();
+			System.exit(0);
         });
 
 		//Set Start Scene and begin
 		BorderPane startPane = new BorderPane();
-		startPane.setPadding(new Insets(65));
-		startPane.setCenter(buttonBox);
-		Scene startScene = new Scene(startPane);
-		primaryStage.setScene(startScene);
+		startPane.getStyleClass().add("backgroundpane");
+		startPane.setLeft(serverChoice);
+		startPane.setRight(clientChoice);
+		BorderPane.setAlignment(serverChoice, Pos.CENTER_LEFT);
+		BorderPane.setAlignment(clientChoice, Pos.CENTER_RIGHT);
+		VBox introBox = new VBox(titleBar, startPane);
+		Scene introScene = new Scene(introBox, 300, 125);
+		primaryStage.setScene(introScene);
 		primaryStage.show();
+		introScene.getStylesheets().add("/styles/IntroStyle.css");
 	}
 	
-	public Scene createServerGui() {
+	public Scene createServerGui(Stage givenStage) {
+		givenStage.setTitle("This is the Server");
+		givenStage.getIcons().clear();
+		givenStage.getIcons().add(new Image("/images/chat_server.png"));
+
+		serverDialogueView = new ListView<>();
+		serverUserList =	 new ListView<>();
+		serverUserList.setPrefWidth(70);
+
 		BorderPane pane = new BorderPane();
-		pane.setPadding(new Insets(50));
-		pane.setStyle("-fx-background-color: gold");
-		serverUsersCountLabel = new Label("Users: 0");
+		pane.getStyleClass().add("borderpane");
 		Label serverChatLabel = new Label("Server-wide Chat");
+		serverUsersCountLabel = new Label("Users: 0");
 		VBox centerBox = new VBox(serverChatLabel, serverDialogueView);
 		pane.setCenter(centerBox);
 		VBox rightBox = new VBox(serverUsersCountLabel, serverUserList);
 		pane.setRight(rightBox);
-		return new Scene(pane, 500, 400);
+		Scene returnScene = new Scene(pane, 500, 400);
+		returnScene.getStylesheets().add("/styles/ServerStyle.css");
+		return returnScene;
 	}
 	
 	public Scene createClientGui(Stage givenStage) {
+		givenStage.getIcons().clear();
+		givenStage.getIcons().add(new Image("/images/chat_client.png"));
+
+		clientDialogueView = new ListView<>();
+		clientUserList =	 new ListView<>();
+		clientDialogueView.setPrefWidth(395);
+		clientUserList.setPrefWidth(70);
+
 		//give title of "Server-wide Chat"
 		Label chatLabel = new Label("Server-wide Chat");
 		clientUsersCountLabel = new Label("Users: 0");
@@ -285,7 +282,6 @@ public class GuiServer extends Application{
 		//Cancel button action
 		cancelButton.setOnAction(e->{
 			rStage.close(); //Close the popup now
-			//givenStage.setScene(sceneMap.get("client"));
 		});
 		//Confirm button action
 		confirmButton.setOnAction(e->{
@@ -372,7 +368,7 @@ public class GuiServer extends Application{
 		//Return button
 		returnButton.setOnAction(e->{
 			//DONE: set scene back to clientGui
-			givenStage.setScene(sceneMap.get("client"));
+			givenStage.setScene(serverWideChatScene);
 			//update group you are leaving's userlist as well as the serverwide chat's to know you're rejoining
 			clientConnection.leaveGroup(new User(iAm), groupIndex);
 			//DONE: set group index back to -1 since we've left
@@ -416,8 +412,41 @@ public class GuiServer extends Application{
 		//make popup unable to be maximized
 		dmStage.setResizable(false);
 	}
+
+	private BorderPane customizeBar(Stage givenStage, String barTitle) {
+		givenStage.initStyle(StageStyle.UNDECORATED);
+		ImageView titleIcon = new ImageView(new Image("/images/chat.png", 32, 32, true, true, true));
+		Label titleLabel = new Label("Project 4: Advanced Chat");
+		Button minimizeButton = new Button("-");
+		minimizeButton.getStyleClass().setAll("windowButton", "miniButton");
+		Button closeButton = new Button("✖");
+		closeButton.getStyleClass().setAll("windowButton", "closeButton");
+		minimizeButton.setOnAction(e->givenStage.setIconified(true));
+		closeButton.setOnAction(e->{Platform.exit(); System.exit(0);});
+		HBox windowBox = new HBox(minimizeButton, closeButton);
+		BorderPane titleBar = new BorderPane();
+		titleBar.setLeft(titleIcon);
+		titleBar.setCenter(titleLabel);
+		titleBar.setRight(windowBox);
+
+		titleBar.setOnMousePressed(event -> {
+			xOffset = event.getSceneX();
+			yOffset = event.getSceneY();
+        });
+        titleBar.setOnMouseDragged(event -> {
+			givenStage.setX(event.getScreenX() - xOffset);
+			givenStage.setY(event.getScreenY() - yOffset);
+        });
+
+		return titleBar;
+	}
+	//TODO: Make client button blue
+	//TODO: give intro a label giving instructions
+	//TODO: make server/client buttons change color on hover and have borders
+	//TODO: New font
 	//TODO: Center everything
 	//TODO: Gradient background colors
+	//TODO: Rounded corners
 	//TODO: color for group DM
 	//TODO: maybe different color for 1 on 1 dm
 	//TODO: custom window title bars
