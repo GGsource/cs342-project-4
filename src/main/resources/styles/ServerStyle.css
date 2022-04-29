@@ -1,6 +1,38 @@
 @import "TitleBarStyle.css";
 
-.borderpane{
-    -fx-background-color: gold;
-    -fx-padding: 50px;
+/* Whole scene's box */
+.serverBox {
+    -fx-background-color: linear-gradient(to bottom right, -server-transluscent, -server-secondary);
+    -fx-background-radius: 12px;
 }
+/* Server's Center Stage */
+.serverPane{
+    -fx-padding: 0 25 25 25;
+    -fx-alignment: top-center;
+}
+
+.vbox { /* Center both boxes */
+    -fx-alignment: center;
+}
+.label {
+    -fx-font: 20 "Gasalt";
+}
+.list-view {
+    -fx-background-color: -dark-primary;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-background-radius: 12;
+}
+.list-cell {
+    -fx-background-color: -dark-secondary;
+    -fx-font-family: "Junegull"; 
+    -fx-text-fill: -dark-unfocused;
+    -fx-background-insets: 1 0 0 0;
+    -fx-background-radius: 12;
+}
+/* .list-cell:odd {
+    -fx-background-color: -dark-primary;
+}
+.list-cell:even {
+    -fx-background-color: -dark-secondary;
+} */

@@ -44,6 +44,7 @@ public class GuiServer extends Application{
 	Scene serverWideChatScene;
 	double xOffset;
 	double yOffset;
+	Label titleLabel;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -106,6 +107,7 @@ public class GuiServer extends Application{
 						if (gmData.isReminder) {
 							iAm = gmData.name;
 							primaryStage.setTitle("You are " + iAm);
+							titleLabel.setText("You are " +iAm);
 						}
 						else if (gmData.isMessage) {
 							//System.out.println("This client received a message!");
@@ -196,11 +198,6 @@ public class GuiServer extends Application{
 	}
 	
 	public Scene createServerGui(Stage givenStage) {
-		//TODO: Make rounded corners
-		//TODO: semi transparent
-		//TODO: change fonts
-		//TODO: change listview colors
-		//TODO: gradient
 		String serverTitle = "This is the Server";
 		givenStage.setTitle(serverTitle);
 		givenStage.getIcons().setAll(new Image("/images/bubble_server.png"));
@@ -216,16 +213,20 @@ public class GuiServer extends Application{
 		BorderPane titleBar = customizeBar(givenStage, serverTitle, 1);
 		//Server Center Stage
 		BorderPane serverPane = new BorderPane();
-		serverPane.getStyleClass().add("borderpane");
+		serverPane.getStyleClass().add("serverPane");
 		Label serverChatLabel = new Label("Server-wide Chat");
 		serverUsersCountLabel = new Label("Users: 0");
 		VBox centerBox = new VBox(serverChatLabel, serverDialogueView);
+		centerBox.getStyleClass().add("vbox");
 		serverPane.setCenter(centerBox);
 		VBox rightBox = new VBox(serverUsersCountLabel, serverUserList);
+		rightBox.getStyleClass().add("vbox");
 		serverPane.setRight(rightBox);
 		VBox serverBox = new VBox(titleBar, serverPane);
+		serverBox.getStyleClass().add("serverBox");
 		Scene serverScene = new Scene(serverBox, 500, 400);
 		serverScene.getStylesheets().add("/styles/ServerStyle.css");
+		serverScene.setFill(Color.TRANSPARENT);
 		titleBar.requestFocus(); //To avoid any button being selected by default :D
 		return serverScene;
 	}
@@ -235,6 +236,8 @@ public class GuiServer extends Application{
 		//TODO: make pressing enter in inputfield sends message
 		givenStage.getIcons().clear();
 		givenStage.getIcons().add(new Image("/images/bubble_client.png"));
+
+		BorderPane titleBar = customizeBar(givenStage, "This is Client", 2);
 
 		clientDialogueView = new ListView<>();
 		clientUserList =	 new ListView<>();
@@ -266,10 +269,13 @@ public class GuiServer extends Application{
 		VBox chatBox = new VBox(10, chatLabel, clientDialogueView, clientInputField, msgButtonsBox);
 		VBox usersBox = new VBox(clientUsersCountLabel, clientUserList);
 		chatBox.setStyle("-fx-background-color: blue");
-		HBox clientBox = new HBox(10, chatBox, usersBox);
-		clientBox.setStyle("-fx-background-color: blue");
-		clientBox.setPadding(new Insets(10));
-		return new Scene(clientBox, 500, 300);
+		HBox centerBox = new HBox(10, chatBox, usersBox);
+		centerBox.setStyle("-fx-background-color: blue");
+		centerBox.setPadding(new Insets(10));
+		VBox clientBox = new VBox(titleBar, centerBox);
+		Scene clientScene = new Scene(clientBox, 500, 300);
+		clientScene.setFill(Color.TRANSPARENT);
+		return clientScene;
 	}
 
 	private Stage createGroupSelectionGui(Stage givenStage) {
@@ -462,7 +468,7 @@ public class GuiServer extends Application{
 				break;
 		}
 		ImageView titleIcon = new ImageView(new Image("/images/"+icon+".png", 24, 24, true, true, true));
-		Label titleLabel = new Label(barTitle);
+		titleLabel = new Label(barTitle);
 		titleLabel.getStyleClass().setAll("titleLabel");
 		Button minimizeButton = new Button("-");
 		minimizeButton.getStyleClass().setAll("windowButton", "miniButton");
@@ -479,6 +485,7 @@ public class GuiServer extends Application{
 		titleBar.setCenter(titleLabel);
 		titleBar.setRight(windowBox);
 		BorderPane.setAlignment(titleIcon, Pos.CENTER);
+		BorderPane.setMargin(titleIcon, new Insets(0, 40, 0, 5));
 
 		titleBar.setOnMousePressed(event -> {
 			xOffset = event.getSceneX();
