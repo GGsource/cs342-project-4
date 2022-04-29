@@ -18,6 +18,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -51,10 +52,15 @@ public class GuiServer extends Application{
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		// //Window title and icon
-		primaryStage.setTitle("Project 4: Advanced Chat");
-		primaryStage.getIcons().add(new Image("/images/chat.png"));
+		String titleString = "Project 4: Advanced Chat App";
+		primaryStage.setTitle(titleString);
+		primaryStage.getIcons().add(new Image("/images/bubble.png"));
 		//Custom title bar!
-		BorderPane titleBar = customizeBar(primaryStage, "Project 4: Advanced Chat");
+		BorderPane titleBar = customizeBar(primaryStage, titleString, 0);
+		//Welcome Message
+		Label introLabel = new Label("Welcome to the Advanced Chat App!");
+		introLabel.getStyleClass().add("introLabel");
+		Label descriptionLabel = new Label("Select Server or Client:");
 		//Server Button
 		Button serverChoice = new Button("Server");
 		serverChoice.getStyleClass().add("serverButton");
@@ -131,7 +137,7 @@ public class GuiServer extends Application{
 							//Give this popup window a title
 							confirmStage.setTitle("Group DM Invite");
 							//Give popup the same icon as client
-							confirmStage.getIcons().add(new Image("/images/chat_invite.png"));
+							confirmStage.getIcons().add(new Image("/images/bubble_invite.png"));
 							//make popup unable to be maximized
 							confirmStage.setResizable(false);
 						}
@@ -171,44 +177,53 @@ public class GuiServer extends Application{
         });
 
 		//Set Start Scene and begin
-		BorderPane startPane = new BorderPane();
-		startPane.getStyleClass().add("backgroundpane");
-		startPane.setLeft(serverChoice);
-		startPane.setRight(clientChoice);
+		BorderPane buttonPane = new BorderPane();
+		buttonPane.getStyleClass().add("buttonPane");
+		buttonPane.setLeft(serverChoice);
+		buttonPane.setRight(clientChoice);
 		BorderPane.setAlignment(serverChoice, Pos.CENTER_LEFT);
 		BorderPane.setAlignment(clientChoice, Pos.CENTER_RIGHT);
-		VBox introBox = new VBox(titleBar, startPane);
-		Scene introScene = new Scene(introBox, 300, 125);
-		primaryStage.setScene(introScene);
-		primaryStage.show();
+		VBox introBox = new VBox(titleBar, introLabel, descriptionLabel, buttonPane);
+		introBox.getStyleClass().setAll("backgroundBox");
+		Scene introScene = new Scene(introBox, 500, 500);
 		introScene.getStylesheets().add("/styles/IntroStyle.css");
+		primaryStage.setScene(introScene);
+		primaryStage.initStyle(StageStyle.TRANSPARENT);
+		introScene.setFill(Color.TRANSPARENT);
+		primaryStage.setResizable(false);
+		titleBar.requestFocus(); //To avoid any button being selected by default :D
+		primaryStage.show();
 	}
 	
 	public Scene createServerGui(Stage givenStage) {
-		givenStage.setTitle("This is the Server");
-		givenStage.getIcons().clear();
-		givenStage.getIcons().add(new Image("/images/chat_server.png"));
+		String serverTitle = "This is the Server";
+		givenStage.setTitle(serverTitle);
+		givenStage.getIcons().setAll(new Image("/images/bubble_server.png"));
 
 		serverDialogueView = new ListView<>();
 		serverUserList =	 new ListView<>();
 		serverUserList.setPrefWidth(70);
 
-		BorderPane pane = new BorderPane();
-		pane.getStyleClass().add("borderpane");
+		//Custom title bar!
+		BorderPane titleBar = customizeBar(givenStage, serverTitle, 1);
+		//Server Center Stage
+		BorderPane serverPane = new BorderPane();
+		serverPane.getStyleClass().add("borderpane");
 		Label serverChatLabel = new Label("Server-wide Chat");
 		serverUsersCountLabel = new Label("Users: 0");
 		VBox centerBox = new VBox(serverChatLabel, serverDialogueView);
-		pane.setCenter(centerBox);
+		serverPane.setCenter(centerBox);
 		VBox rightBox = new VBox(serverUsersCountLabel, serverUserList);
-		pane.setRight(rightBox);
-		Scene returnScene = new Scene(pane, 500, 400);
-		returnScene.getStylesheets().add("/styles/ServerStyle.css");
-		return returnScene;
+		serverPane.setRight(rightBox);
+		VBox serverBox = new VBox(titleBar, serverPane);
+		Scene serverScene = new Scene(serverBox, 500, 400);
+		serverScene.getStylesheets().add("/styles/ServerStyle.css");
+		return serverScene;
 	}
 	
 	public Scene createClientGui(Stage givenStage) {
 		givenStage.getIcons().clear();
-		givenStage.getIcons().add(new Image("/images/chat_client.png"));
+		givenStage.getIcons().add(new Image("/images/bubble_client.png"));
 
 		clientDialogueView = new ListView<>();
 		clientUserList =	 new ListView<>();
@@ -410,27 +425,47 @@ public class GuiServer extends Application{
 		dmStage.setY(pos.y);
 		dmStage.setTitle("Who to Invite?");
 		//Give popup the same icon as client
-		dmStage.getIcons().add(new Image("/images/chat_invite.png"));
+		dmStage.getIcons().add(new Image("/images/bubble_invite.png"));
 		//make popup unable to be maximized
 		dmStage.setResizable(false);
 	}
 
-	private BorderPane customizeBar(Stage givenStage, String barTitle) {
-		givenStage.initStyle(StageStyle.UNDECORATED);
-		ImageView titleIcon = new ImageView(new Image("/images/chat.png", 32, 32, true, true, true));
-		Label titleLabel = new Label("Project 4: Advanced Chat");
+	private BorderPane customizeBar(Stage givenStage, String barTitle, int sceneType) {
+		String icon = "bubble";
+		switch (sceneType) {
+			case 1: {//this is server scene
+				icon += "_server";
+				break;
+			} case 2: {//this is client scene
+				icon += "_client";
+				break;
+			} case 3: {//this is invite request/confirm scene
+				icon += "_invite";
+				break;
+			} case 4: {//this is group scene
+				icon += "_group";
+				break;
+			} default://this is neutral scene, no change needed
+				break;
+		}
+		ImageView titleIcon = new ImageView(new Image("/images/"+icon+".png", 24, 24, true, true, true));
+		Label titleLabel = new Label(barTitle);
+		titleLabel.getStyleClass().setAll("titleLabel");
 		Button minimizeButton = new Button("-");
 		minimizeButton.getStyleClass().setAll("windowButton", "miniButton");
+		minimizeButton.setOnAction(e->givenStage.setIconified(true));
+		minimizeButton.setFocusTraversable(false);
 		Button closeButton = new Button("✖");
 		closeButton.getStyleClass().setAll("windowButton", "closeButton");
-		minimizeButton.setOnAction(e->givenStage.setIconified(true));
 		closeButton.setOnAction(e->{Platform.exit(); System.exit(0);});
+		closeButton.setFocusTraversable(false);
 		HBox windowBox = new HBox(minimizeButton, closeButton);
 		BorderPane titleBar = new BorderPane();
 		titleBar.getStyleClass().setAll("titleBar");
 		titleBar.setLeft(titleIcon);
 		titleBar.setCenter(titleLabel);
 		titleBar.setRight(windowBox);
+		BorderPane.setAlignment(titleIcon, Pos.CENTER);
 
 		titleBar.setOnMousePressed(event -> {
 			xOffset = event.getSceneX();

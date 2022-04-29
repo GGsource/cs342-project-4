@@ -1,62 +1,57 @@
-@import "ColorPalette.css";
-
+/* All my scenes use the same title bar to share the CSS! */
+@import "TitleBarStyle.css";
 /*-------------------------------------------------------------*/
-/* Modifications for the titlebar's background */
-.titleBar{
-    -fx-background-color: -dark-primary;
-}
-/* Changes for Window's Title */
 .label {
+    -fx-font: 20 "Junegull";
     -fx-text-fill: white;
-}
-/* Uniform look for close/minimize buttons */
-.windowButton {
-    -fx-font-size: 16px;
-    -fx-pref-width: 40px;
-    -fx-pref-height: 32px;
     -fx-alignment: center;
-    -fx-text-fill: grey;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
 }
 /*-------------------------------------------------------------*/
-/* Modifications for the intro's main center stage pane */
-.backgroundpane {
-    -fx-background-color: linear-gradient(to bottom right, -server-primary, -client-primary);
-    -fx-padding: 25px;
+/* Intro Scene Background */
+.backgroundBox {
+    -fx-background-color: linear-gradient(to bottom right, -server-transluscent, -client-transluscent);
+    -fx-alignment: top-center;
+    -fx-background-radius: 10px;
 }
-/* Change color when we hover over the close or minimize buttons! */
-.miniButton:hover {
-    -fx-background-color: rgba(124, 124, 124, 0.219);
-    -fx-text-fill: white;
+/* Intro Message */
+.introLabel {
+    -fx-font: 40 "NEON CLUB MUSIC";
+    -fx-padding: 30 30 60 30;
 }
-.closeButton:hover {
-    -fx-background-color: rgb(226, 0, 0);
-    -fx-text-fill: white;
+/* Some padding around the two center stage buttons */
+.buttonPane {
+    -fx-padding: 30 60 30 60;
 }
-/*-------------------------------------------------------------*/
 /* Uniform look for server/client buttons */
 .button {
-    -fx-pref-width: 100px;
-    -fx-pref-height: 50px;
+    -fx-font: 20 "Junegull";
+    -fx-pref-width: 150px;
+    -fx-pref-height: 75px;
     -fx-text-fill: white;
     -fx-background-radius: 20px;
-}
-/* Specific colors for each */
-.serverButton {
-    -fx-background-color: -server-primary;
-}
-.clientButton {
-    -fx-background-color: -client-primary;
+    -fx-background-insets: 0px;
+    -fx-background-color: -dark-primary;
 }
 /* Change colors on hover */
 .serverButton:hover {
-    -fx-background-color: -dark-primary;
-    -fx-border-color: -server-secondary;
+    -fx-background-color: -server-secondary;
+    -fx-border-color: -server-primary;
+    -fx-text-fill: -server-highlight;
     -fx-border-radius: 16px;
     -fx-border-width: 4px;
 }
 .clientButton:hover {
-    -fx-background-color: -dark-primary;
-    -fx-border-color: -client-secondary;
+    -fx-background-color: -client-secondary;
+    -fx-border-color: -client-primary;
+    -fx-text-fill: -client-highlight;
     -fx-border-radius: 16px;
     -fx-border-width: 4px;
+}
+/*-------------------------------------------------------------*/
+.serverButton:focused, .clientButton:focused {
+    -fx-border-color: cyan;
+    -fx-border-width: 3px;
+    -fx-border-radius: 1px;
 }

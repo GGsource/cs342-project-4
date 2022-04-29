@@ -1,0 +1,33 @@
+@import "ColorPalette.css";
+/* Modifications for the titlebar's background */
+.titleBar{
+    -fx-background-color: white;
+    -fx-padding: 0 0 0 10; /* <- Gives icon some space on the left */
+}
+.titleBar:focused { /*TitleBar is different color when window not in focus*/
+    -fx-background-color: -dark-primary;
+}
+.titleLabel {
+    -fx-font: 16 "Junegull";
+    -fx-text-fill: -dark-highlight;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+}
+/* Uniform look for close/minimize buttons */
+.windowButton {
+    -fx-font-size: 16px;
+    -fx-pref-width: 40px;
+    -fx-pref-height: 32px;
+    -fx-alignment: center;
+    -fx-text-fill: grey;
+}
+/* Change color when we hover over the close or minimize buttons! */
+.miniButton:hover {
+    -fx-background-color: rgba(124, 124, 124, 0.219);
+    -fx-text-fill: white;
+}
+.closeButton:hover {
+    -fx-background-color: rgb(226, 0, 0);
+    -fx-text-fill: white;
+}

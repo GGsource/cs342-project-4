@@ -1,9 +1,23 @@
+/* Custom Fonts */
+@font-face {
+	font-family: "Junegull";
+	src: url("../fonts/junegull.ttf");
+}
+@font-face {
+    font-family: "NEON CLUB MUSIC";
+    src: url("../fonts/NCM.otf");
+}
 .root {
     /* Color Palette - Shared across application */
-    -server-primary:    #c38c00;
-    -server-secondary:  #9d7100;
-    -client-primary:    #0391FD;
-    -client-secondary:  #0F71D3;
-    -dark-primary:      #21252b;
-    -dark-secondary:    #1a1e23;
+    -server-primary:    rgb(195, 140, 0);
+    -server-secondary:  rgb(157, 113, 0);
+    -server-highlight:  derive(-server-primary, 55%);
+    -server-transluscent:      rgba(194, 139, 0, 0.95);
+    -client-primary:    rgb(3, 145, 253);
+    -client-secondary:  rgb(15, 113, 211);
+    -client-highlight:  derive(-client-primary, 55%);
+    -client-transluscent:      rgba(3, 144, 252, 0.95);
+    -dark-primary:      rgb(33, 37, 43);
+    -dark-secondary:    rgb(26, 30, 35);
+    -dark-highlight:    derive(-dark-primary, 45%);
 }
