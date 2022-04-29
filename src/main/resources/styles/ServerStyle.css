@@ -1,3 +1,5 @@
+@import "TitleBarStyle.css";
+
 .borderpane{
     -fx-background-color: gold;
     -fx-padding: 50px;

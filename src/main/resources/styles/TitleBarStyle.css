@@ -1,7 +1,7 @@
 @import "ColorPalette.css";
 /* Modifications for the titlebar's background */
 .titleBar{
-    -fx-background-color: white;
+    -fx-background-color: -dark-unfocused;
     -fx-padding: 0 0 0 10; /* <- Gives icon some space on the left */
 }
 .titleBar:focused { /*TitleBar is different color when window not in focus*/

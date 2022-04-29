@@ -196,6 +196,11 @@ public class GuiServer extends Application{
 	}
 	
 	public Scene createServerGui(Stage givenStage) {
+		//TODO: Make rounded corners
+		//TODO: semi transparent
+		//TODO: change fonts
+		//TODO: change listview colors
+		//TODO: gradient
 		String serverTitle = "This is the Server";
 		givenStage.setTitle(serverTitle);
 		givenStage.getIcons().setAll(new Image("/images/bubble_server.png"));
@@ -203,6 +208,9 @@ public class GuiServer extends Application{
 		serverDialogueView = new ListView<>();
 		serverUserList =	 new ListView<>();
 		serverUserList.setPrefWidth(70);
+		//Make it so neither list can be focused on
+		serverDialogueView.setFocusTraversable(false);
+		serverUserList.setFocusTraversable(false);
 
 		//Custom title bar!
 		BorderPane titleBar = customizeBar(givenStage, serverTitle, 1);
@@ -218,10 +226,13 @@ public class GuiServer extends Application{
 		VBox serverBox = new VBox(titleBar, serverPane);
 		Scene serverScene = new Scene(serverBox, 500, 400);
 		serverScene.getStylesheets().add("/styles/ServerStyle.css");
+		titleBar.requestFocus(); //To avoid any button being selected by default :D
 		return serverScene;
 	}
 	
 	public Scene createClientGui(Stage givenStage) {
+		//TODO: Give client custom titlebar
+		//TODO: make pressing enter in inputfield sends message
 		givenStage.getIcons().clear();
 		givenStage.getIcons().add(new Image("/images/bubble_client.png"));
 
@@ -361,6 +372,8 @@ public class GuiServer extends Application{
 	}
 
 	private Scene createGroupDMGUI(Stage givenStage) {
+		//TODO: color for group DM
+		//TODO: maybe different color for 1 on 1 dm
 		Label groupLabel = new Label("Group Chat");
 		groupChatView = new ListView<>();
 		groupInputField = new TextField();
@@ -478,21 +491,7 @@ public class GuiServer extends Application{
 
 		return titleBar;
 	}
-	//TODO: Make client button blue
-	//TODO: give intro a label giving instructions
-	//TODO: make server/client buttons change color on hover and have borders
-	//TODO: New font
-	//TODO: Center everything
-	//TODO: Gradient background colors
-	//TODO: Rounded corners
-	//TODO: color for group DM
-	//TODO: maybe different color for 1 on 1 dm
-	//TODO: custom window title bars
-	//TODO: shift to style sheets
-	//TODO: make buttons uniform sizes
-	//TODO: color listviews
-	//TODO: darkmode theme
-	//TODO: make pressing enter in inputfield sends message
+	
 
 	//TODO: Make clients rotate between color themes for icons and backgrounds? maybe...
 }

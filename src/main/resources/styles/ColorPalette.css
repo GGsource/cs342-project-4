@@ -20,4 +20,5 @@
     -dark-primary:      rgb(33, 37, 43);
     -dark-secondary:    rgb(26, 30, 35);
     -dark-highlight:    derive(-dark-primary, 45%);
+    -dark-unfocused: derive(-dark-primary, 100%);
 }
