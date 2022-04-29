@@ -1,0 +1,58 @@
+/* Center Stage */
+.centerPane{
+    -fx-padding: 0 25 25 25;
+    -fx-alignment: top-center;
+}
+/* Center both boxes */
+.vbox { 
+    -fx-alignment: center;
+}
+/* Labels above lists */
+.label {
+    -fx-font: 20 "Gasalt";
+    -fx-text-alignment: center;
+}
+/* List Appearances */
+.list-view {
+    -fx-opacity: 1;
+    -fx-background-color: -dark-primary;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-background-radius: 12;
+}
+.list-cell {
+    -fx-background-color: -dark-secondary;
+    -fx-font-family: "Junegull"; 
+    -fx-text-fill: -dark-unfocused;
+    -fx-background-insets: 1 0 0 0;
+    -fx-background-radius: 12;
+}
+
+.button {
+    -fx-font: 10 "Junegull";
+    -fx-pref-width: 80px;
+    -fx-min-height: 35px;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+    -fx-text-fill: white;
+    -fx-background-radius: 12px;
+    -fx-background-insets: 0px;
+    -fx-background-color: -dark-primary;
+}
+.button:hover {
+    -fx-border-radius: 10px;
+    -fx-border-width: 4px;
+}
+.button:focused {
+    -fx-border-color: rgba(0, 255, 255, 0.55);
+    -fx-border-width: 2px;
+    -fx-border-radius: 12px;
+}
+
+.text-field {
+    -fx-background-color: -dark-primary;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: -dark-highlight;
+    -fx-background-radius: 0 0 12 12;
+    -fx-font-family: "Junegull";
+}

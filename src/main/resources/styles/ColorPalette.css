@@ -20,7 +20,11 @@
     -client-primary:    rgb(3, 145, 253);
     -client-secondary:  rgb(0, 81, 162);
     -client-highlight:  derive(-client-primary, 55%);
-    -client-transluscent:      rgba(3, 144, 252, 0.95);
+    -client-transluscent:      rgba(3, 144, 253, 0.95);
+    -group-primary: rgb(13, 193, 65);
+    -group-secondary: rgb(4, 133, 40);
+    -group-highlight: derive(-group-primary, 55%);
+    -group-transluscent: rgba(13, 193, 64, 0.95);
     -dark-primary:      rgb(33, 37, 43);
     -dark-secondary:    rgb(26, 30, 35);
     -dark-highlight:    derive(-dark-primary, 45%);

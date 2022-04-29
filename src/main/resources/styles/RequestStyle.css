@@ -1,0 +1,13 @@
+@import "TitleBarStyle.css";
+@import "SharedStyle.css";
+
+.requestBox {
+    -fx-background-color: linear-gradient(to bottom right, -group-transluscent, -client-secondary);
+    -fx-background-radius: 12px;
+}
+/* Buttons turn green when hovered on */
+.button:hover {
+    -fx-background-color: -group-secondary;
+    -fx-border-color: -group-primary;
+    -fx-text-fill: -group-highlight;
+}

@@ -189,6 +189,7 @@ public class GuiServer extends Application{
 		introBox.getStyleClass().setAll("backgroundBox");
 		Scene introScene = new Scene(introBox, 500, 500);
 		introScene.getStylesheets().add("/styles/IntroStyle.css");
+		introScene.setOnMouseClicked(e->{titleBar.requestFocus();}); //clicking on screen focuses back the window
 		primaryStage.setScene(introScene);
 		primaryStage.initStyle(StageStyle.TRANSPARENT);
 		introScene.setFill(Color.TRANSPARENT);
@@ -213,7 +214,7 @@ public class GuiServer extends Application{
 		BorderPane titleBar = customizeBar(givenStage, serverTitle, 1);
 		//Server Center Stage
 		BorderPane serverPane = new BorderPane();
-		serverPane.getStyleClass().add("serverPane");
+		serverPane.getStyleClass().add("centerPane");
 		Label serverChatLabel = new Label("Server-wide Chat");
 		serverUsersCountLabel = new Label("Users: 0");
 		VBox centerBox = new VBox(serverChatLabel, serverDialogueView);
@@ -240,9 +241,11 @@ public class GuiServer extends Application{
 		BorderPane titleBar = customizeBar(givenStage, "This is Client", 2);
 
 		clientDialogueView = new ListView<>();
-		clientUserList =	 new ListView<>();
 		clientDialogueView.setPrefWidth(395);
+		clientDialogueView.setDisable(true);
+		clientUserList =	 new ListView<>();
 		clientUserList.setPrefWidth(70);
+		clientUserList.setDisable(true);
 
 		//give title of "Server-wide Chat"
 		Label chatLabel = new Label("Server-wide Chat");
@@ -267,19 +270,25 @@ public class GuiServer extends Application{
 		HBox msgButtonsBox = new HBox(20, sendButton, dmButton, groupButton);
 		msgButtonsBox.setAlignment(Pos.CENTER);
 		VBox chatBox = new VBox(10, chatLabel, clientDialogueView, clientInputField, msgButtonsBox);
+		chatBox.getStyleClass().add("vbox");
 		VBox usersBox = new VBox(clientUsersCountLabel, clientUserList);
-		chatBox.setStyle("-fx-background-color: blue");
+		usersBox.getStyleClass().add("vbox");
 		HBox centerBox = new HBox(10, chatBox, usersBox);
-		centerBox.setStyle("-fx-background-color: blue");
-		centerBox.setPadding(new Insets(10));
+		centerBox.getStyleClass().add("centerPane");
 		VBox clientBox = new VBox(titleBar, centerBox);
-		Scene clientScene = new Scene(clientBox, 500, 300);
+		clientBox.getStyleClass().add("clientBox");
+		Scene clientScene = new Scene(clientBox, 550, 350);
+		clientScene.getStylesheets().add("/styles/ClientStyle.css");
 		clientScene.setFill(Color.TRANSPARENT);
+		clientScene.setOnMouseClicked(e->{titleBar.requestFocus();});
+		titleBar.requestFocus();
 		return clientScene;
 	}
 
 	private Stage createGroupSelectionGui(Stage givenStage) {
-		Label groupTitleLabel = new Label("Select who you would like to message");
+		//BorderPane titleBar = customizeBar(givenStage, "Group Request", 3);
+		
+		Label groupTitleLabel = new Label("Select who you would like to message:");
 		groupTitleLabel.setWrapText(true);
 		VBox usersBox = new VBox();
 		ToggleGroup tg = new ToggleGroup();
@@ -308,18 +317,26 @@ public class GuiServer extends Application{
 		confirmationBox.setAlignment(Pos.CENTER);
 		VBox dmSelectBox = new VBox(10, groupTitleLabel, usersBox, confirmationBox);
 		dmSelectBox.setAlignment(Pos.CENTER);
-
-		Scene returnScene = new Scene(dmSelectBox, 200, 200);
-		Stage rStage = new Stage();
-		rStage.setScene(returnScene);
+		dmSelectBox.getStyleClass().add("centerPane");
+		VBox requestBox = new VBox( dmSelectBox);
+		requestBox.getStyleClass().add("requestBox");
+		Scene requestScene = new Scene(requestBox, 200, 200);
+		Stage requestStage = new Stage();
+		requestStage.setScene(requestScene);
+		requestStage.initStyle(StageStyle.TRANSPARENT);
+		requestScene.setFill(Color.TRANSPARENT);
+		requestScene.getStylesheets().add("/styles/RequestStyle.css");
+		groupTitleLabel.requestFocus();
 
 		//Cancel button action
+		cancelButton.setCancelButton(true);
 		cancelButton.setOnAction(e->{
-			rStage.close(); //Close the popup now
+			requestStage.close(); //Close the popup now
 		});
+		requestStage.setOnCloseRequest(e->requestStage.close());
 		//Confirm button action
 		confirmButton.setOnAction(e->{
-			rStage.close(); //Close the popup now
+			requestStage.close(); //Close the popup now
 			if (isIndividual) {
 				RadioButton chosenButton = (RadioButton)tg.getSelectedToggle();
 				if (chosenButton != null) { //In case the user selected nothing
@@ -343,7 +360,7 @@ public class GuiServer extends Application{
 			clientConnection.createGroup(new User(iAm));
 			givenStage.setScene(createGroupDMGUI(givenStage));
 		});
-		return rStage;
+		return requestStage;
 	}
 
 	private Stage createDMConfirmGui(Stage givenStage, String requestingUser, int groupNum) {
@@ -355,11 +372,18 @@ public class GuiServer extends Application{
 		optionBox.setAlignment(Pos.CENTER);
 		VBox confirmBox = new VBox(10, requesterLabel, optionBox);
 		confirmBox.setAlignment(Pos.CENTER);
+		confirmBox.getStyleClass().setAll("requestBox", "centerPane");
 
 		Scene confirmScene = new Scene(confirmBox, 300, 100);
 		Stage cStage = new Stage();
 		cStage.setScene(confirmScene);
+		cStage.initStyle(StageStyle.TRANSPARENT);
 
+		confirmScene.getStylesheets().add("/styles/RequestStyle.css");
+		confirmScene.setFill(Color.TRANSPARENT);
+		requesterLabel.requestFocus();
+
+		declineButton.setCancelButton(true);
 		declineButton.setOnAction(e->{
 			cStage.close();
 		});
@@ -380,8 +404,11 @@ public class GuiServer extends Application{
 	private Scene createGroupDMGUI(Stage givenStage) {
 		//TODO: color for group DM
 		//TODO: maybe different color for 1 on 1 dm
+		BorderPane titleBar = customizeBar(givenStage, titleLabel.getText(), 4);
+
 		Label groupLabel = new Label("Group Chat");
 		groupChatView = new ListView<>();
+		groupChatView.setDisable(true);
 		groupInputField = new TextField();
 		groupInputField.setPromptText("Message Group");
 		Button sendButton = new Button("Send");
@@ -389,15 +416,17 @@ public class GuiServer extends Application{
 		VBox groupLeftBox = new VBox(10, groupLabel, groupChatView, inputBox);
 		participantsLabel = new Label("Participants: ");
 		participantsView = new ListView<>();
+		participantsView.setDisable(true);
 		Button returnButton = new Button("Return");
 		VBox groupRightBox = new VBox(10, participantsLabel, participantsView, returnButton);
-		HBox groupBox = new HBox(10, groupLeftBox, groupRightBox);
+		HBox centerBox = new HBox(10, groupLeftBox, groupRightBox);
+		centerBox.getStyleClass().add("centerPane");
+		VBox groupBox = new VBox(titleBar, centerBox);
+		groupBox.getStyleClass().add("groupBox");
 		//Center everything
 		inputBox.setAlignment(Pos.CENTER);
 		groupLeftBox.setAlignment(Pos.CENTER);
 		groupRightBox.setAlignment(Pos.CENTER);
-		groupBox.setAlignment(Pos.CENTER);
-		groupBox.setPadding(new Insets(10));
 		//Adjust list sizes
 		participantsView.setPrefWidth(70);
 
@@ -417,7 +446,13 @@ public class GuiServer extends Application{
 			groupInputField.clear();
 		});
 		//Send back the scene
-		return new Scene(groupBox, 400, 300);
+		Scene groupScene = new Scene(groupBox, 400, 300);
+		groupScene.getStylesheets().add("/styles/GroupStyle.css");
+		groupScene.setFill(Color.TRANSPARENT);
+		groupScene.setOnMouseClicked(e->{titleBar.requestFocus();});
+		titleBar.requestFocus();
+
+		return groupScene;
 	}
 
 	//Helper Function
@@ -498,7 +533,4 @@ public class GuiServer extends Application{
 
 		return titleBar;
 	}
-	
-
-	//TODO: Make clients rotate between color themes for icons and backgrounds? maybe...
 }

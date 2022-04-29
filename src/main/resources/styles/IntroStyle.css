@@ -50,7 +50,7 @@
 }
 /*-------------------------------------------------------------*/
 .serverButton:focused, .clientButton:focused {
-    -fx-border-color: cyan;
-    -fx-border-width: 3px;
-    -fx-border-radius: 15px;
+    -fx-border-color: rgba(0, 255, 255, 0.55);
+    -fx-border-width: 2px;
+    -fx-border-radius: 16px;
 }

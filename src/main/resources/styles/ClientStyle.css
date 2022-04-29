@@ -1,0 +1,13 @@
+@import "TitleBarStyle.css";
+@import "SharedStyle.css";
+
+.clientBox {
+    -fx-background-color: linear-gradient(to bottom right, -client-transluscent, -client-secondary);
+    -fx-background-radius: 12px;
+}
+/* Buttons turn green when hovered on */
+.button:hover {
+    -fx-background-color: -client-secondary;
+    -fx-border-color: -client-primary;
+    -fx-text-fill: -client-highlight;
+}
