@@ -1,3 +1,8 @@
+//CS 342: Project 4 - Advanced Chat App
+//ggonza55@uic.edu
+
+//Entirely Custom UI, was fun to make
+
 import java.util.ArrayList;
 
 import javafx.application.Application;
